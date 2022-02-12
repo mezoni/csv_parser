@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:csv_parser/csv_parser.dart' as _csv_parser;
+import 'package:fast_csv/fast_csv.dart' as _fast_csv;
 
 void main(List<String> args) {
   _test();
@@ -10,7 +10,7 @@ void _test() {
     {
       const s = '''
 123''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123']
       ]);
@@ -19,7 +19,7 @@ void _test() {
       const s = '''
 123
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123']
       ]);
@@ -29,7 +29,7 @@ void _test() {
 123
 456
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123'],
         ['456']
@@ -40,7 +40,7 @@ void _test() {
 123,"abc"
 456,def
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123', 'abc'],
         ['456', 'def']
@@ -51,7 +51,7 @@ void _test() {
 123,"""abc"""
 456,def
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123', '"abc"'],
         ['456', 'def']
@@ -62,7 +62,7 @@ void _test() {
 123,"ab""c"""
 456,def
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123', 'ab"c"'],
         ['456', 'def']
@@ -73,7 +73,7 @@ void _test() {
 123,abc,1
 456,def,
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123', 'abc', '1'],
         ['456', 'def', '']
@@ -85,7 +85,7 @@ void _test() {
 line",1
 456,def,
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123', 'multi\nline', '1'],
         ['456', 'def', '']
@@ -101,7 +101,7 @@ line"
 
 789
 ''';
-      final r = _csv_parser.parse(s);
+      final r = _fast_csv.parse(s);
       expect(r, [
         ['123', 'abc'],
         ['456', 'multi\nline'],

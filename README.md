@@ -1,4 +1,4 @@
-# csv_parser
+# fast_csv
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
