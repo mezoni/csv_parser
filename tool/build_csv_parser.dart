@@ -11,7 +11,7 @@ import 'package:parser_builder/transformers.dart';
 void main(List<String> args) async {
   final context = Context();
   context.optimizeForSize = false;
-  final filename = 'lib/csv_parser.dart';
+  final filename = 'lib/fast_csv.dart';
   await fastBuild(context, [_parse], filename, header: __header);
 }
 
