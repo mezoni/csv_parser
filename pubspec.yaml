@@ -1,0 +1,12 @@
+name: csv_parser
+version: 0.1.0
+description: Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
+environment:
+  sdk: '>=2.15.0 <3.0.0'
+dependencies:
+  source_span: ^1.8.2
+dev_dependencies:
+  lints: ^1.0.1
+  parser_builder:
+    path: ../parser_builder
+  test: ^1.20.1
