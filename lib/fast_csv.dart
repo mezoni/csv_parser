@@ -474,6 +474,7 @@ String _errorMessage(String source, List<Err> errors,
   return sb.toString();
 }
 
+/// Represents the `char` used in parsing errors.
 class Char {
   final int charCode;
 
@@ -494,6 +495,7 @@ class Char {
   }
 }
 
+/// Represents a type used to indicate parsing errors.
 class Err {
   final List<Err> errors;
   final ErrKind kind;
@@ -750,6 +752,7 @@ class StringState extends State<String> {
   }
 }
 
+/// Represents the `tag` (symbol) used in parsing errors.
 class Tag {
   final String name;
 
@@ -770,12 +773,14 @@ class Tag {
 }
 
 extension on String {
+  /// Returns `true` if [pos] points to the end of the string (or beyond).
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   bool atEnd(int pos) {
     return pos >= length;
   }
 
+  /// Parses the 16-bit character [c] and returns that character.
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   int? char16(State<String> state, int c) {
@@ -793,6 +798,7 @@ extension on String {
     return null;
   }
 
+  /// Parses the 32-bit character [c] and returns that character.
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   int? char32(State<String> state, int c) {
@@ -810,6 +816,7 @@ extension on String {
     return null;
   }
 
+  /// Returns the rune at position [index].
   @pragma('vm:exact-result-type', 'dart:core#_Smi')
   @pragma('vm:prefer-inline')
   // ignore: unused_element
@@ -825,6 +832,8 @@ extension on String {
     return c1;
   }
 
+  /// Parses a short [tag] as a single 16-bit character [c] and returns that
+  /// [tag].
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   String? shortTag(State<String> state, String tag, int c) {
@@ -842,12 +851,14 @@ extension on String {
     return null;
   }
 
+  /// Returns a slice (substring) of the string from [start] to [end].
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   String slice(int start, int end) {
     return substring(start, end);
   }
 
+  /// Parses [tag] and returns that [tag].
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   String? tag(State<String> state, String tag) {
@@ -862,6 +873,8 @@ extension on String {
     return null;
   }
 
+  /// Parses [tag] case-insensitively using the converter [convert] and returns
+  /// this [tag].
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   String? tagNoCase(
@@ -883,6 +896,7 @@ extension on String {
   }
 }
 
+/// Kinds of parsing errors.
 enum ErrKind {
   combined,
   expected,
