@@ -47,12 +47,126 @@ String? _text(State<String> state) {
     } else {
       state.pos = $start;
       state.ok = false;
-      state.error = Err.unexpectedChar($pos, Char($c));
+      state.error = ErrUnexpected.char($pos, Char($c));
     }
   } else {
     state.ok = false;
-    state.error = Err.unexpectedEof($pos);
+    state.error = ErrUnexpected.eof($pos);
   }
+  return $0;
+}
+
+List<int>? _chars(State<String> state) {
+  final source = state.source;
+  List<int>? $0;
+  int? $1;
+  for (;;) {
+    int? $2;
+    String? $4;
+    final $pos = state.pos;
+    if (source.startsWith('""', $pos)) {
+      state.pos += 2;
+      state.ok = true;
+      $4 = '""';
+    } else {
+      state.ok = false;
+      state.error = ErrExpected.tag($pos, const Tag('""'));
+    }
+    if (state.ok) {
+      $2 = 34;
+    }
+    if (state.ok) {
+      $1 = $2;
+      break;
+    }
+    final $3 = state.error;
+    int? $5;
+    final $pos1 = state.pos;
+    if ($pos1 < source.length) {
+      final $c = source.runeAt($pos1);
+      final $v = !($c == 0x22);
+      if ($v) {
+        state.pos += $c > 0xffff ? 2 : 1;
+        state.ok = true;
+        $5 = $c;
+      } else {
+        state.ok = false;
+        state.error = ErrUnexpected.char($pos1, Char($c));
+      }
+    } else {
+      state.ok = false;
+      state.error = ErrUnexpected.eof($pos1);
+    }
+    if (state.ok) {
+      $1 = $5;
+      break;
+    }
+    final $6 = state.error;
+    state.error = ErrCombined(state.pos, [$3, $6]);
+    break;
+  }
+  if (state.ok) {
+    final $list = [$1!];
+    while (true) {
+      int? $7;
+      for (;;) {
+        int? $8;
+        String? $10;
+        final $pos2 = state.pos;
+        if (source.startsWith('""', $pos2)) {
+          state.pos += 2;
+          state.ok = true;
+          $10 = '""';
+        } else {
+          state.ok = false;
+          state.error = ErrExpected.tag($pos2, const Tag('""'));
+        }
+        if (state.ok) {
+          $8 = 34;
+        }
+        if (state.ok) {
+          $7 = $8;
+          break;
+        }
+        final $9 = state.error;
+        int? $11;
+        final $pos3 = state.pos;
+        if ($pos3 < source.length) {
+          final $c1 = source.runeAt($pos3);
+          final $v1 = !($c1 == 0x22);
+          if ($v1) {
+            state.pos += $c1 > 0xffff ? 2 : 1;
+            state.ok = true;
+            $11 = $c1;
+          } else {
+            state.ok = false;
+            state.error = ErrUnexpected.char($pos3, Char($c1));
+          }
+        } else {
+          state.ok = false;
+          state.error = ErrUnexpected.eof($pos3);
+        }
+        if (state.ok) {
+          $7 = $11;
+          break;
+        }
+        final $12 = state.error;
+        state.error = ErrCombined(state.pos, [$9, $12]);
+        break;
+      }
+      if (!state.ok) {
+        $0 = $list;
+        break;
+      }
+      $list.add($7!);
+    }
+  } else {
+    // To prevent a red warning at runtime about using the null check operator on non null value
+    if (!state.ok) {
+      $0 = const [];
+    }
+  }
+  state.ok = true;
   return $0;
 }
 
@@ -72,138 +186,31 @@ String? _string(State<String> state) {
   }
   if ($1 == null) {
     state.ok = false;
-    state.error = Err.expectedTag($pos1, const Tag('"'));
+    state.error = ErrExpected.tag($pos1, const Tag('"'));
   }
   if (state.ok) {
     String? $2;
     List<int>? $3;
-    int? $4;
-    for (;;) {
-      int? $5;
-      String? $7;
-      final $pos2 = state.pos;
-      if (source.startsWith('""', $pos2)) {
-        state.pos += 2;
-        state.ok = true;
-        $7 = '""';
-      } else {
-        state.ok = false;
-        state.error = Err.expectedTag($pos2, const Tag('""'));
-      }
-      if (state.ok) {
-        $5 = 34;
-      }
-      if (state.ok) {
-        $4 = $5;
-        break;
-      }
-      final $6 = state.error;
-      int? $8;
-      final $pos3 = state.pos;
-      if ($pos3 < source.length) {
-        final $c1 = source.runeAt($pos3);
-        final $v = !($c1 == 0x22);
-        if ($v) {
-          state.pos += $c1 > 0xffff ? 2 : 1;
-          state.ok = true;
-          $8 = $c1;
-        } else {
-          state.ok = false;
-          state.error = Err.unexpectedChar($pos3, Char($c1));
-        }
-      } else {
-        state.ok = false;
-        state.error = Err.unexpectedEof($pos3);
-      }
-      if (state.ok) {
-        $4 = $8;
-        break;
-      }
-      final $9 = state.error;
-      state.error = Err.combined(state.pos, [$6, $9]);
-      break;
-    }
-    if (state.ok) {
-      final $list = [$4!];
-      while (true) {
-        int? $10;
-        for (;;) {
-          int? $11;
-          String? $13;
-          final $pos4 = state.pos;
-          if (source.startsWith('""', $pos4)) {
-            state.pos += 2;
-            state.ok = true;
-            $13 = '""';
-          } else {
-            state.ok = false;
-            state.error = Err.expectedTag($pos4, const Tag('""'));
-          }
-          if (state.ok) {
-            $11 = 34;
-          }
-          if (state.ok) {
-            $10 = $11;
-            break;
-          }
-          final $12 = state.error;
-          int? $14;
-          final $pos5 = state.pos;
-          if ($pos5 < source.length) {
-            final $c2 = source.runeAt($pos5);
-            final $v1 = !($c2 == 0x22);
-            if ($v1) {
-              state.pos += $c2 > 0xffff ? 2 : 1;
-              state.ok = true;
-              $14 = $c2;
-            } else {
-              state.ok = false;
-              state.error = Err.unexpectedChar($pos5, Char($c2));
-            }
-          } else {
-            state.ok = false;
-            state.error = Err.unexpectedEof($pos5);
-          }
-          if (state.ok) {
-            $10 = $14;
-            break;
-          }
-          final $15 = state.error;
-          state.error = Err.combined(state.pos, [$12, $15]);
-          break;
-        }
-        if (!state.ok) {
-          $3 = $list;
-          break;
-        }
-        $list.add($10!);
-      }
-    } else {
-      // To prevent a red warning at runtime about using the null check operator on non null value
-      if (true != false) {
-        $3 = const [];
-      }
-    }
-    state.ok = true;
+    $3 = _chars(state);
     if (state.ok) {
       final $v1 = $3!;
       final $v2 = String.fromCharCodes($v1);
       $2 = $v2;
     }
     if (state.ok) {
-      String? $16;
-      final $pos6 = state.pos;
-      if ($pos6 < source.length) {
-        final $c3 = source.codeUnitAt($pos6);
-        if ($c3 == 34) {
+      String? $4;
+      final $pos2 = state.pos;
+      if ($pos2 < source.length) {
+        final $c1 = source.codeUnitAt($pos2);
+        if ($c1 == 34) {
           state.pos++;
           state.ok = true;
-          $16 = '"';
+          $4 = '"';
         }
       }
-      if ($16 == null) {
+      if ($4 == null) {
         state.ok = false;
-        state.error = Err.expectedTag($pos6, const Tag('"'));
+        state.error = ErrExpected.tag($pos2, const Tag('"'));
       }
       if (state.ok) {
         $0 = $2!;
@@ -219,7 +226,9 @@ String? _string(State<String> state) {
 String? _empty(State<String> state) {
   String? $0;
   state.ok = true;
-  $0 = '';
+  if (state.ok) {
+    $0 = '';
+  }
   return $0;
 }
 
@@ -247,7 +256,7 @@ String? _field(State<String> state) {
       break;
     }
     final $6 = state.error;
-    state.error = Err.combined(state.pos, [$2, $4, $6]);
+    state.error = ErrCombined(state.pos, [$2, $4, $6]);
     break;
   }
   return $0;
@@ -274,7 +283,7 @@ List<String>? _row(State<String> state) {
       }
       if ($2 == null) {
         state.ok = false;
-        state.error = Err.expectedTag($pos1, const Tag(','));
+        state.error = ErrExpected.tag($pos1, const Tag(','));
       }
       if (!state.ok) {
         break;
@@ -293,8 +302,40 @@ List<String>? _row(State<String> state) {
   return $0;
 }
 
-List<List<String>>? _rows(State<String> state) {
+String? _eol(State<String> state) {
   final source = state.source;
+  String? $0;
+  state.ok = false;
+  final $pos = state.pos;
+  if ($pos < source.length) {
+    var $c = source.codeUnitAt($pos);
+    if ($c == 0xA) {
+      state.pos++;
+      state.ok = true;
+      $0 = '\n';
+    } else if ($c == 0xD) {
+      if ($pos + 1 < source.length) {
+        $c = source.codeUnitAt($pos + 1);
+        if ($c == 0xA) {
+          state.pos += 2;
+          state.ok = true;
+          $0 = '\r\n';
+        } else {
+          state.error = ErrExpected.char($pos + 1, const Char(0xA));
+        }
+      } else {
+        state.error = ErrUnexpected.eof(source.length);
+      }
+    } else {
+      state.error = ErrUnexpected.char($pos, Char($c));
+    }
+  } else {
+    state.error = ErrUnexpected.eof(source.length);
+  }
+  return $0;
+}
+
+List<List<String>>? _rows(State<String> state) {
   List<List<String>>? $0;
   final $pos = state.pos;
   List<List<String>>? $1;
@@ -307,51 +348,25 @@ List<List<String>>? _rows(State<String> state) {
       bool? $3;
       final $pos2 = state.pos;
       String? $4;
-      state.ok = false;
-      final $pos3 = state.pos;
-      if ($pos3 < source.length) {
-        var $c = source.codeUnitAt($pos3);
-        if ($c == 0xA) {
-          state.pos++;
-          state.ok = true;
-          $4 = '\n';
-        } else if ($c == 0xD) {
-          if ($pos3 + 1 < source.length) {
-            $c = source.codeUnitAt($pos3 + 1);
-            if ($c == 0xA) {
-              state.pos += 2;
-              state.ok = true;
-              $4 = '\r\n';
-            } else {
-              state.error = Err.expectedChar($pos3 + 1, const Char(0xA));
-            }
-          } else {
-            state.error = Err.unexpectedEof(source.length);
-          }
-        } else {
-          state.error = Err.unexpectedChar($pos3, Char($c));
-        }
-      } else {
-        state.error = Err.unexpectedEof(source.length);
-      }
+      $4 = _eol(state);
       if (state.ok) {
         bool? $5;
-        final $pos4 = state.pos;
+        final $pos3 = state.pos;
         bool? $6;
-        final $pos5 = state.pos;
-        state.ok = state.source.atEnd($pos5);
+        final $pos4 = state.pos;
+        state.ok = state.source.atEnd($pos4);
         if (state.ok) {
           $6 = true;
         } else {
-          state.error = Err.expectedEof($pos5);
+          state.error = ErrExpected.eof($pos4);
         }
         if (!state.ok) {
           state.ok = true;
           $5 = true;
         } else {
-          state.pos = $pos4;
+          state.pos = $pos3;
           state.ok = false;
-          state.error = Err.unknown(state.pos);
+          state.error = ErrUnknown(state.pos);
         }
         if (state.ok) {
           $3 = true;
@@ -377,33 +392,7 @@ List<List<String>>? _rows(State<String> state) {
   if (state.ok) {
     dynamic $8;
     String? $9;
-    state.ok = false;
-    final $pos6 = state.pos;
-    if ($pos6 < source.length) {
-      var $c1 = source.codeUnitAt($pos6);
-      if ($c1 == 0xA) {
-        state.pos++;
-        state.ok = true;
-        $9 = '\n';
-      } else if ($c1 == 0xD) {
-        if ($pos6 + 1 < source.length) {
-          $c1 = source.codeUnitAt($pos6 + 1);
-          if ($c1 == 0xA) {
-            state.pos += 2;
-            state.ok = true;
-            $9 = '\r\n';
-          } else {
-            state.error = Err.expectedChar($pos6 + 1, const Char(0xA));
-          }
-        } else {
-          state.error = Err.unexpectedEof(source.length);
-        }
-      } else {
-        state.error = Err.unexpectedChar($pos6, Char($c1));
-      }
-    } else {
-      state.error = Err.unexpectedEof(source.length);
-    }
+    $9 = _eol(state);
     if (state.ok) {
       $8 = $9!;
     } else {
@@ -432,7 +421,7 @@ List<List<String>>? _parse(State<String> state) {
     if (state.ok) {
       $2 = true;
     } else {
-      state.error = Err.expectedEof($pos1);
+      state.error = ErrExpected.eof($pos1);
     }
     if (state.ok) {
       $0 = $1!;
@@ -495,136 +484,17 @@ class Char {
   }
 }
 
-/// Represents a type used to indicate parsing errors.
-class Err {
-  final List<Err> errors;
-  final ErrKind kind;
-  final int length;
-  final int offset;
-  final Object? value;
-
-  const Err(this.offset, this.length,
-      {this.errors = const [], required this.kind, this.value});
-
-  Err.combined(this.offset, this.errors)
-      : kind = ErrKind.combined,
-        length = 1,
-        value = null;
-
-  Err.expected(this.offset, this.length, this.value)
-      : kind = ErrKind.expected,
-        errors = const [];
-
-  Err.expectedChar(this.offset, Char char)
-      : kind = ErrKind.expected,
-        errors = const [],
-        length = 1,
-        value = char;
-
-  Err.expectedEof(this.offset)
-      : kind = ErrKind.expected,
-        errors = const [],
-        length = 1,
-        value = const Tag('EOF');
-
-  Err.expectedLabel(this.offset, String label)
-      : kind = ErrKind.expected,
-        errors = const [],
-        length = 1,
-        value = label;
-
-  Err.expectedTag(this.offset, Tag tag)
-      : kind = ErrKind.expected,
-        errors = const [],
-        length = 1,
-        value = tag;
-
-  Err.malformed(this.offset, String label, this.errors)
-      : kind = ErrKind.malformed,
-        length = 1,
-        value = label;
-
-  Err.message(this.offset, this.length, String message)
-      : kind = ErrKind.message,
-        errors = const [],
-        value = message;
-
-  Err.nested(this.offset, Tag tag, this.errors)
-      : kind = ErrKind.nested,
-        length = 1,
-        value = tag;
-
-  Err.unexpectedChar(this.offset, Char char)
-      : kind = ErrKind.unexpected,
-        errors = const [],
-        length = 1,
-        value = char;
-
-  Err.unexpectedEof(this.offset)
-      : kind = ErrKind.unexpected,
-        errors = const [],
-        length = 1,
-        value = const Tag('EOF');
-
-  Err.unexpectedTag(this.offset, Tag tag)
-      : kind = ErrKind.unexpected,
-        errors = const [],
-        length = tag.name.length,
-        value = tag;
-
-  Err.unknown(this.offset)
-      : kind = ErrKind.unknown,
-        errors = const [],
-        length = 1,
-        value = null;
-
+abstract class Err {
   @override
-  int get hashCode {
-    return errors.hashCode ^ kind.hashCode ^ offset.hashCode ^ value.hashCode;
-  }
+  int get hashCode => length.hashCode ^ offset.hashCode;
+
+  int get length;
+
+  int get offset;
 
   @override
   bool operator ==(other) {
-    if (other is Err) {
-      return other.errors == errors &&
-          other.kind == kind &&
-          other.length == length &&
-          other.offset == offset &&
-          other.value == value;
-    }
-    return false;
-  }
-
-  @override
-  String toString() {
-    var result = '';
-    switch (kind) {
-      case ErrKind.combined:
-        final list = errors.join(', ');
-        result = '[$list]';
-        break;
-      case ErrKind.expected:
-        result = 'Expected: $value';
-        break;
-      case ErrKind.malformed:
-        result = 'Malformed $value';
-        break;
-      case ErrKind.message:
-        result = value.toString();
-        break;
-      case ErrKind.nested:
-        final list = errors.join(', ');
-        result = '[$list]';
-        break;
-      case ErrKind.unexpected:
-        result = 'Unexpected: $value';
-        break;
-      case ErrKind.unknown:
-        result = 'Unknown error';
-        break;
-    }
-
-    return result;
+    return other is Err && other.length == length && other.offset == offset;
   }
 
   static List<Err> errorReport(Err error) {
@@ -635,33 +505,32 @@ class Err {
 
   static List<Err> flatten(Err error) {
     void flatten(Err error, List<Err> result) {
-      final kind = error.kind;
-      if (kind == ErrKind.combined) {
+      if (error is ErrCombined) {
         for (final error in error.errors) {
           flatten(error, result);
         }
-      } else if (kind == ErrKind.malformed || kind == ErrKind.nested) {
+      } else if (error is ErrWithTagAndErrors) {
         final inner = <Err>[];
-        for (final error in error.errors) {
-          flatten(error, inner);
+        for (final nestedError in error.errors) {
+          flatten(nestedError, inner);
         }
 
-        final max = inner.map((e) => e.offset + e.length).reduce((x, y) {
-          return x == y
-              ? x
-              : x > y
-                  ? x
-                  : y;
-        });
-        final farthest = inner.where((e) => e.offset + e.length == max);
+        int max(int x, int y) => x > y
+            ? x
+            : y < x
+                ? x
+                : y;
+        final maxOffset = inner.map((e) => e.offset).reduce((max));
+        final farthest = inner.where((e) => e.offset == maxOffset);
         final offset = error.offset;
-        final value = error.value;
-        result.add(Err.expected(offset, 1, value));
-        if (max > offset + error.length) {
-          if (kind == ErrKind.malformed) {
-            result.add(Err.message(offset, max, 'Malformed $value'));
+        final tag = error.tag;
+        result.add(ErrExpected.tag(offset, tag));
+        if (maxOffset > offset) {
+          if (error is ErrMalformed) {
+            result
+                .add(ErrMessage(offset, maxOffset - offset, 'Malformed $tag'));
             result.addAll(farthest);
-          } else if (kind == ErrKind.nested) {
+          } else if (error is ErrNested) {
             result.addAll(farthest);
           } else {
             throw StateError('Internal error');
@@ -679,7 +548,7 @@ class Err {
 
   static List<Err> groupExpected(List<Err> errors) {
     final result = <Err>[];
-    final expected = errors.where((e) => e.kind == ErrKind.expected);
+    final expected = errors.whereType<ErrExpected>();
     Map<T, List<S>> groupBy<S, T>(Iterable<S> values, T Function(S) key) {
       final map = <T, List<S>>{};
       for (final element in values) {
@@ -696,8 +565,7 @@ class Err {
         continue;
       }
 
-      final kind = error.kind;
-      if (kind != ErrKind.expected) {
+      if (error is! ErrExpected) {
         result.add(error);
         continue;
       }
@@ -714,7 +582,7 @@ class Err {
       }
 
       final message = elements.join(', ');
-      final newError = Err.message(offset, 1, 'Expected: $message');
+      final newError = ErrMessage(offset, 1, 'Expected: $message');
       result.add(newError);
     }
 
@@ -722,10 +590,244 @@ class Err {
   }
 }
 
+class ErrCombined extends ErrWithErrors {
+  @override
+  final List<Err> errors;
+
+  @override
+  final int offset;
+
+  ErrCombined(this.offset, this.errors);
+
+  @override
+  int get length => 1;
+
+  @override
+  // ignore: hash_and_equals
+  bool operator ==(other) {
+    return super == other && other is ErrCombined;
+  }
+}
+
+class ErrExpected extends Err {
+  @override
+  final int offset;
+
+  final Object? value;
+
+  ErrExpected(this.offset, this.value);
+
+  ErrExpected.char(this.offset, Char value) : value = value;
+
+  ErrExpected.eof(this.offset) : value = const Tag('EOF');
+
+  ErrExpected.label(this.offset, String value) : value = value;
+
+  ErrExpected.tag(this.offset, Tag value) : value = value;
+
+  @override
+  int get hashCode => super.hashCode ^ value.hashCode;
+
+  @override
+  int get length => 1;
+
+  @override
+  bool operator ==(other) {
+    return super == other && other is ErrExpected && other.value == value;
+  }
+
+  @override
+  String toString() {
+    final result = 'Expected: $value';
+    return result;
+  }
+}
+
+class ErrMalformed extends ErrWithTagAndErrors {
+  @override
+  final List<Err> errors;
+
+  @override
+  final int offset;
+
+  @override
+  final Tag tag;
+
+  ErrMalformed(this.offset, this.tag, this.errors);
+
+  @override
+  int get length => 1;
+
+  @override
+  // ignore: hash_and_equals
+  bool operator ==(other) {
+    return super == other && other is ErrMalformed;
+  }
+}
+
+class ErrMessage extends Err {
+  @override
+  final int length;
+
+  final String message;
+
+  @override
+  final int offset;
+
+  ErrMessage(this.offset, this.length, this.message);
+
+  @override
+  int get hashCode => super.hashCode ^ message.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return super == other && other is ErrMessage && other.message == message;
+  }
+}
+
+class ErrNested extends ErrWithTagAndErrors {
+  @override
+  final List<Err> errors;
+
+  @override
+  final int offset;
+
+  @override
+  final Tag tag;
+
+  ErrNested(this.offset, this.tag, this.errors);
+
+  @override
+  int get length => 1;
+
+  @override
+  // ignore: hash_and_equals
+  bool operator ==(other) {
+    return super == other && other is ErrNested;
+  }
+}
+
+class ErrUnexpected extends Err {
+  @override
+  final int length;
+
+  @override
+  final int offset;
+
+  final Object? value;
+
+  ErrUnexpected(this.offset, this.length, this.value);
+
+  ErrUnexpected.char(this.offset, Char value)
+      : length = 1,
+        value = value;
+
+  ErrUnexpected.eof(this.offset)
+      : length = 1,
+        value = const Tag('EOF');
+
+  ErrUnexpected.label(this.offset, String value)
+      : length = value.length,
+        value = value;
+
+  ErrUnexpected.tag(this.offset, Tag value)
+      : length = value.name.length,
+        value = value;
+
+  @override
+  int get hashCode => super.hashCode ^ value.hashCode;
+
+  @override
+  bool operator ==(other) {
+    return super == other && other is ErrUnexpected && other.value == value;
+  }
+
+  @override
+  String toString() {
+    final result = 'Unexpected: $value';
+    return result;
+  }
+}
+
+class ErrUnknown extends Err {
+  @override
+  final int offset;
+
+  ErrUnknown(this.offset);
+
+  @override
+  int get length => 1;
+
+  @override
+  // ignore: hash_and_equals
+  bool operator ==(other) {
+    return super == other && other is ErrUnknown;
+  }
+
+  @override
+  String toString() {
+    final result = 'Unknown error';
+    return result;
+  }
+}
+
+abstract class ErrWithErrors extends Err {
+  List<Err> get errors;
+
+  @override
+  int get hashCode {
+    var result = super.hashCode;
+    for (final error in errors) {
+      result ^= error.hashCode;
+    }
+
+    return result;
+  }
+
+  @override
+  bool operator ==(other) {
+    if (super == other) {
+      if (other is ErrWithErrors) {
+        final otherErrors = other.errors;
+        if (otherErrors.length == errors.length) {
+          for (var i = 0; i < errors.length; i++) {
+            final error = errors[i];
+            final otherError = otherErrors[i];
+            if (otherError != error) {
+              return false;
+            }
+          }
+
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  @override
+  String toString() {
+    final list = errors.join(', ');
+    final result = '[$list]';
+    return result;
+  }
+}
+
+abstract class ErrWithTagAndErrors extends ErrWithErrors {
+  Tag get tag;
+
+  @override
+  // ignore: hash_and_equals
+  bool operator ==(other) {
+    return super == other && other is ErrWithTagAndErrors && other.tag == tag;
+  }
+}
+
 abstract class State<T> {
   Object? context;
 
-  Err error = Err.unknown(-1);
+  Err error = ErrUnknown(-1);
 
   bool ok = false;
 
@@ -794,7 +896,7 @@ extension on String {
       }
     }
     state.ok = false;
-    state.error = Err.expectedChar(pos, Char(c));
+    state.error = ErrExpected.char(pos, Char(c));
     return null;
   }
 
@@ -812,7 +914,7 @@ extension on String {
       }
     }
     state.ok = false;
-    state.error = Err.expectedChar(pos, Char(c));
+    state.error = ErrExpected.char(pos, Char(c));
     return null;
   }
 
@@ -847,7 +949,7 @@ extension on String {
       }
     }
     state.ok = false;
-    state.error = Err.expectedTag(pos, Tag(tag));
+    state.error = ErrExpected.tag(pos, Tag(tag));
     return null;
   }
 
@@ -869,7 +971,7 @@ extension on String {
       return tag;
     }
     state.ok = false;
-    state.error = Err.expectedTag(pos, Tag(tag));
+    state.error = ErrExpected.tag(pos, Tag(tag));
     return null;
   }
 
@@ -891,18 +993,7 @@ extension on String {
       }
     }
     state.ok = false;
-    state.error = Err.expectedTag(pos, Tag(tag));
+    state.error = ErrExpected.tag(pos, Tag(tag));
     return null;
   }
-}
-
-/// Kinds of parsing errors.
-enum ErrKind {
-  combined,
-  expected,
-  malformed,
-  message,
-  nested,
-  unexpected,
-  unknown
 }

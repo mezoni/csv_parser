@@ -44,7 +44,16 @@ List<List<String>> parse(String source) {
 
 ''';
 
+const _chars = Named(
+    '_chars',
+    Many0(Alt([
+      Value(0x22, Tag('""')),
+      Satisfy(NotCharClass('["]')),
+    ])));
+
 const _empty = Named('_empty', Value<String, String>(''));
+
+const _eol = Named('_eol', LineEnding());
 
 const _field = Named('_field', Alt([_text, _string, _empty]));
 
@@ -54,20 +63,11 @@ const _row = Named('_row', SeparatedList1(_field, Tag(',')));
 
 const _rows = Named(
     '_rows',
-    Terminated(SeparatedList1(_row, Skip<String>([LineEnding(), Not(Eof())])),
-        Opt(LineEnding())));
+    Terminated(
+        SeparatedList1(_row, Skip<String>([_eol, Not(Eof())])), Opt(_eol)));
 
-const _string = Named(
-    '_string',
-    Delimited(
-        Tag('"'),
-        Map$(
-            Many0(Alt([
-              Value(0x22, Tag('""')),
-              Satisfy(NotCharClass('["]')),
-            ])),
-            _toString),
-        Tag('"')));
+const _string =
+    Named('_string', Delimited(Tag('"'), Map$(_chars, _toString), Tag('"')));
 
 const _text = Named('_text', TakeWhile1(NotCharClass('[,"] | #xA | #xD')));
 
