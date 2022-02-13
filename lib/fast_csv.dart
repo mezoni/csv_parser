@@ -601,12 +601,6 @@ class ErrCombined extends ErrWithErrors {
 
   @override
   int get length => 1;
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrCombined;
-  }
 }
 
 class ErrExpected extends Err {
@@ -626,15 +620,7 @@ class ErrExpected extends Err {
   ErrExpected.tag(this.offset, Tag value) : value = value;
 
   @override
-  int get hashCode => super.hashCode ^ value.hashCode;
-
-  @override
   int get length => 1;
-
-  @override
-  bool operator ==(other) {
-    return super == other && other is ErrExpected && other.value == value;
-  }
 
   @override
   String toString() {
@@ -659,9 +645,9 @@ class ErrMalformed extends ErrWithTagAndErrors {
   int get length => 1;
 
   @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrMalformed;
+  String toString() {
+    final result = 'Malformed $tag';
+    return result;
   }
 }
 
@@ -677,11 +663,8 @@ class ErrMessage extends Err {
   ErrMessage(this.offset, this.length, this.message);
 
   @override
-  int get hashCode => super.hashCode ^ message.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return super == other && other is ErrMessage && other.message == message;
+  String toString() {
+    return message;
   }
 }
 
@@ -701,9 +684,9 @@ class ErrNested extends ErrWithTagAndErrors {
   int get length => 1;
 
   @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrNested;
+  String toString() {
+    final result = 'Nested $tag';
+    return result;
   }
 }
 
@@ -735,14 +718,6 @@ class ErrUnexpected extends Err {
         value = value;
 
   @override
-  int get hashCode => super.hashCode ^ value.hashCode;
-
-  @override
-  bool operator ==(other) {
-    return super == other && other is ErrUnexpected && other.value == value;
-  }
-
-  @override
   String toString() {
     final result = 'Unexpected: $value';
     return result;
@@ -759,12 +734,6 @@ class ErrUnknown extends Err {
   int get length => 1;
 
   @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrUnknown;
-  }
-
-  @override
   String toString() {
     final result = 'Unknown error';
     return result;
@@ -773,38 +742,6 @@ class ErrUnknown extends Err {
 
 abstract class ErrWithErrors extends Err {
   List<Err> get errors;
-
-  @override
-  int get hashCode {
-    var result = super.hashCode;
-    for (final error in errors) {
-      result ^= error.hashCode;
-    }
-
-    return result;
-  }
-
-  @override
-  bool operator ==(other) {
-    if (super == other) {
-      if (other is ErrWithErrors) {
-        final otherErrors = other.errors;
-        if (otherErrors.length == errors.length) {
-          for (var i = 0; i < errors.length; i++) {
-            final error = errors[i];
-            final otherError = otherErrors[i];
-            if (otherError != error) {
-              return false;
-            }
-          }
-
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
 
   @override
   String toString() {
@@ -816,12 +753,6 @@ abstract class ErrWithErrors extends Err {
 
 abstract class ErrWithTagAndErrors extends ErrWithErrors {
   Tag get tag;
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrWithTagAndErrors && other.tag == tag;
-  }
 }
 
 abstract class State<T> {

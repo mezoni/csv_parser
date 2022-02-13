@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.2
+Version: 0.1.3
 
 ## Example of the parser usage
 
