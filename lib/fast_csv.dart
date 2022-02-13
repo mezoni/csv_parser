@@ -59,114 +59,64 @@ String? _text(State<String> state) {
 List<int>? _chars(State<String> state) {
   final source = state.source;
   List<int>? $0;
-  int? $1;
+  final $list = <int>[];
   for (;;) {
-    int? $2;
-    String? $4;
-    final $pos = state.pos;
-    if (source.startsWith('""', $pos)) {
-      state.pos += 2;
-      state.ok = true;
-      $4 = '""';
-    } else {
-      state.ok = false;
-      state.error = ErrExpected.tag($pos, const Tag('""'));
-    }
-    if (state.ok) {
-      $2 = 34;
-    }
-    if (state.ok) {
-      $1 = $2;
-      break;
-    }
-    final $3 = state.error;
-    int? $5;
-    final $pos1 = state.pos;
-    if ($pos1 < source.length) {
-      final $c = source.runeAt($pos1);
-      final $v = !($c == 0x22);
-      if ($v) {
-        state.pos += $c > 0xffff ? 2 : 1;
+    int? $1;
+    for (;;) {
+      int? $2;
+      String? $4;
+      final $pos = state.pos;
+      if (source.startsWith('""', $pos)) {
+        state.pos += 2;
         state.ok = true;
-        $5 = $c;
+        $4 = '""';
       } else {
         state.ok = false;
-        state.error = ErrUnexpected.char($pos1, Char($c));
+        state.error = ErrExpected.tag($pos, const Tag('""'));
       }
-    } else {
-      state.ok = false;
-      state.error = ErrUnexpected.eof($pos1);
-    }
-    if (state.ok) {
-      $1 = $5;
+      if (state.ok) {
+        $2 = 34;
+      }
+      if (state.ok) {
+        $1 = $2;
+        break;
+      }
+      final $3 = state.error;
+      int? $5;
+      final $pos1 = state.pos;
+      if ($pos1 < source.length) {
+        final $c = source.runeAt($pos1);
+        final $v = !($c == 0x22);
+        if ($v) {
+          state.pos += $c > 0xffff ? 2 : 1;
+          state.ok = true;
+          $5 = $c;
+        } else {
+          state.ok = false;
+          state.error = ErrUnexpected.char($pos1, Char($c));
+        }
+      } else {
+        state.ok = false;
+        state.error = ErrUnexpected.eof($pos1);
+      }
+      if (state.ok) {
+        $1 = $5;
+        break;
+      }
+      final $6 = state.error;
+      state.error = ErrCombined(state.pos, [$3, $6]);
       break;
     }
-    final $6 = state.error;
-    state.error = ErrCombined(state.pos, [$3, $6]);
-    break;
-  }
-  if (state.ok) {
-    final $list = [$1!];
-    while (true) {
-      int? $7;
-      for (;;) {
-        int? $8;
-        String? $10;
-        final $pos2 = state.pos;
-        if (source.startsWith('""', $pos2)) {
-          state.pos += 2;
-          state.ok = true;
-          $10 = '""';
-        } else {
-          state.ok = false;
-          state.error = ErrExpected.tag($pos2, const Tag('""'));
-        }
-        if (state.ok) {
-          $8 = 34;
-        }
-        if (state.ok) {
-          $7 = $8;
-          break;
-        }
-        final $9 = state.error;
-        int? $11;
-        final $pos3 = state.pos;
-        if ($pos3 < source.length) {
-          final $c1 = source.runeAt($pos3);
-          final $v1 = !($c1 == 0x22);
-          if ($v1) {
-            state.pos += $c1 > 0xffff ? 2 : 1;
-            state.ok = true;
-            $11 = $c1;
-          } else {
-            state.ok = false;
-            state.error = ErrUnexpected.char($pos3, Char($c1));
-          }
-        } else {
-          state.ok = false;
-          state.error = ErrUnexpected.eof($pos3);
-        }
-        if (state.ok) {
-          $7 = $11;
-          break;
-        }
-        final $12 = state.error;
-        state.error = ErrCombined(state.pos, [$9, $12]);
-        break;
-      }
-      if (!state.ok) {
-        $0 = $list;
-        break;
-      }
-      $list.add($7!);
-    }
-  } else {
-    // To prevent a red warning at runtime about using the null check operator on non null value
     if (!state.ok) {
-      $0 = const [];
+      state.ok = true;
+      // To prevent a red warning at runtime about using the null check operator on non null value
+      if (state.ok) {
+        $0 = $list;
+      }
+      break;
     }
+    $list.add($1!);
   }
-  state.ok = true;
   return $0;
 }
 
@@ -265,37 +215,36 @@ String? _field(State<String> state) {
 List<String>? _row(State<String> state) {
   final source = state.source;
   List<String>? $0;
-  String? $1;
-  $1 = _field(state);
-  if (state.ok) {
-    final $list = [$1!];
-    while (true) {
-      final $pos = state.pos;
-      String? $2;
-      final $pos1 = state.pos;
-      if ($pos1 < source.length) {
-        final $c = source.codeUnitAt($pos1);
-        if ($c == 44) {
-          state.pos++;
-          state.ok = true;
-          $2 = ',';
-        }
-      }
-      if ($2 == null) {
-        state.ok = false;
-        state.error = ErrExpected.tag($pos1, const Tag(','));
-      }
-      if (!state.ok) {
-        break;
-      }
-      String? $3;
-      $3 = _field(state);
-      if (!state.ok) {
-        state.pos = $pos;
-        break;
-      }
-      $list.add($3!);
+  final $list = <String>[];
+  var $pos = state.pos;
+  for (;;) {
+    String? $1;
+    $1 = _field(state);
+    if (!state.ok) {
+      state.pos = $pos;
+      break;
     }
+    $list.add($1!);
+    $pos = state.pos;
+    String? $2;
+    final $pos1 = state.pos;
+    if ($pos1 < source.length) {
+      final $c = source.codeUnitAt($pos1);
+      if ($c == 44) {
+        state.pos++;
+        state.ok = true;
+        $2 = ',';
+      }
+    }
+    if ($2 == null) {
+      state.ok = false;
+      state.error = ErrExpected.tag($pos1, const Tag(','));
+    }
+    if (!state.ok) {
+      break;
+    }
+  }
+  if ($list.isNotEmpty) {
     state.ok = true;
     $0 = $list;
   }
@@ -339,65 +288,64 @@ List<List<String>>? _rows(State<String> state) {
   List<List<String>>? $0;
   final $pos = state.pos;
   List<List<String>>? $1;
-  List<String>? $2;
-  $2 = _row(state);
-  if (state.ok) {
-    final $list = [$2!];
-    while (true) {
-      final $pos1 = state.pos;
-      bool? $3;
-      final $pos2 = state.pos;
-      String? $4;
-      $4 = _eol(state);
-      if (state.ok) {
-        bool? $5;
-        final $pos3 = state.pos;
-        bool? $6;
-        final $pos4 = state.pos;
-        state.ok = state.source.atEnd($pos4);
-        if (state.ok) {
-          $6 = true;
-        } else {
-          state.error = ErrExpected.eof($pos4);
-        }
-        if (!state.ok) {
-          state.ok = true;
-          $5 = true;
-        } else {
-          state.pos = $pos3;
-          state.ok = false;
-          state.error = ErrUnknown(state.pos);
-        }
-        if (state.ok) {
-          $3 = true;
-        }
-      }
-      if (!state.ok) {
-        state.pos = $pos2;
-      }
-      if (!state.ok) {
-        break;
-      }
-      List<String>? $7;
-      $7 = _row(state);
-      if (!state.ok) {
-        state.pos = $pos1;
-        break;
-      }
-      $list.add($7!);
+  final $list = <List<String>>[];
+  var $pos1 = state.pos;
+  for (;;) {
+    List<String>? $2;
+    $2 = _row(state);
+    if (!state.ok) {
+      state.pos = $pos1;
+      break;
     }
+    $list.add($2!);
+    $pos1 = state.pos;
+    bool? $3;
+    final $pos2 = state.pos;
+    String? $4;
+    $4 = _eol(state);
+    if (state.ok) {
+      bool? $5;
+      final $pos3 = state.pos;
+      bool? $6;
+      final $pos4 = state.pos;
+      state.ok = state.source.atEnd($pos4);
+      if (state.ok) {
+        $6 = true;
+      } else {
+        state.error = ErrExpected.eof($pos4);
+      }
+      if (!state.ok) {
+        state.ok = true;
+        $5 = true;
+      } else {
+        state.pos = $pos3;
+        state.ok = false;
+        state.error = ErrUnknown(state.pos);
+      }
+      if (state.ok) {
+        $3 = true;
+      }
+    }
+    if (!state.ok) {
+      state.pos = $pos2;
+    }
+    if (!state.ok) {
+      break;
+    }
+  }
+  if ($list.isNotEmpty) {
     state.ok = true;
     $1 = $list;
   }
   if (state.ok) {
-    dynamic $8;
-    String? $9;
-    $9 = _eol(state);
+    dynamic $7;
+    String? $8;
+    $8 = _eol(state);
     if (state.ok) {
-      $8 = $9!;
+      $7 = $8!;
     } else {
       state.ok = true;
-      $8 = null;
+      $7 = null;
     }
     if (state.ok) {
       $0 = $1!;
