@@ -32,14 +32,14 @@ String? _text(State<String> state) {
   final $len = source.length;
   var $pos = $start;
   if ($pos < $len) {
-    var $c = 0;
+    var c = 0;
     while ($pos < $len) {
-      $c = source.runeAt($pos);
-      final $v = !($c == 0xA || $c == 0xD || $c == 0x22 || $c == 0x2C);
-      if (!$v) {
+      c = source.runeAt($pos);
+      final v = !(c == 0xA || c == 0xD || c == 0x22 || c == 0x2C);
+      if (!v) {
         break;
       }
-      $pos += $c > 0xffff ? 2 : 1;
+      $pos += c > 0xffff ? 2 : 1;
     }
     if ($pos > $start) {
       state.pos = $pos;
@@ -47,7 +47,7 @@ String? _text(State<String> state) {
     } else {
       state.pos = $start;
       state.ok = false;
-      state.error = ErrUnexpected.char($pos, Char($c));
+      state.error = ErrUnexpected.char($pos, Char(c));
     }
   } else {
     state.ok = false;
@@ -65,14 +65,12 @@ List<int>? _chars(State<String> state) {
     for (;;) {
       int? $2;
       String? $4;
-      final $pos = state.pos;
-      if (source.startsWith('""', $pos)) {
+      state.ok = state.source.startsWith('""', state.pos);
+      if (state.ok) {
         state.pos += 2;
-        state.ok = true;
         $4 = '""';
       } else {
-        state.ok = false;
-        state.error = ErrExpected.tag($pos, const Tag('""'));
+        state.error = ErrExpected.tag(state.pos, const Tag('""'));
       }
       if (state.ok) {
         $2 = 34;
@@ -83,21 +81,21 @@ List<int>? _chars(State<String> state) {
       }
       final $3 = state.error;
       int? $5;
-      final $pos1 = state.pos;
-      if ($pos1 < source.length) {
-        final $c = source.runeAt($pos1);
-        final $v = !($c == 0x22);
-        if ($v) {
-          state.pos += $c > 0xffff ? 2 : 1;
+      final $pos = state.pos;
+      if ($pos < source.length) {
+        final c = source.runeAt($pos);
+        final v = !(c == 0x22);
+        if (v) {
+          state.pos += c > 0xffff ? 2 : 1;
           state.ok = true;
-          $5 = $c;
+          $5 = c;
         } else {
           state.ok = false;
-          state.error = ErrUnexpected.char($pos1, Char($c));
+          state.error = ErrUnexpected.char($pos, Char(c));
         }
       } else {
         state.ok = false;
-        state.error = ErrUnexpected.eof($pos1);
+        state.error = ErrUnexpected.eof($pos);
       }
       if (state.ok) {
         $1 = $5;
@@ -121,14 +119,11 @@ List<int>? _chars(State<String> state) {
 }
 
 String? _string(State<String> state) {
-  final source = state.source;
   String? $0;
   final $pos = state.pos;
   String? $1;
-  final $pos1 = state.pos;
-  if ($pos1 < source.length) {
-    final $c = source.codeUnitAt($pos1);
-    if ($c == 34) {
+  if (state.pos < state.source.length) {
+    if (state.source.codeUnitAt(state.pos) == 34) {
       state.pos++;
       state.ok = true;
       $1 = '"';
@@ -136,23 +131,20 @@ String? _string(State<String> state) {
   }
   if ($1 == null) {
     state.ok = false;
-    state.error = ErrExpected.tag($pos1, const Tag('"'));
+    state.error = ErrExpected.tag(state.pos, const Tag('"'));
   }
   if (state.ok) {
     String? $2;
     List<int>? $3;
     $3 = _chars(state);
     if (state.ok) {
-      final $v1 = $3!;
-      final $v2 = String.fromCharCodes($v1);
-      $2 = $v2;
+      final v = $3!;
+      $2 = String.fromCharCodes(v);
     }
     if (state.ok) {
       String? $4;
-      final $pos2 = state.pos;
-      if ($pos2 < source.length) {
-        final $c1 = source.codeUnitAt($pos2);
-        if ($c1 == 34) {
+      if (state.pos < state.source.length) {
+        if (state.source.codeUnitAt(state.pos) == 34) {
           state.pos++;
           state.ok = true;
           $4 = '"';
@@ -160,7 +152,7 @@ String? _string(State<String> state) {
       }
       if ($4 == null) {
         state.ok = false;
-        state.error = ErrExpected.tag($pos2, const Tag('"'));
+        state.error = ErrExpected.tag(state.pos, const Tag('"'));
       }
       if (state.ok) {
         $0 = $2!;
@@ -213,7 +205,6 @@ String? _field(State<String> state) {
 }
 
 List<String>? _row(State<String> state) {
-  final source = state.source;
   List<String>? $0;
   final $list = <String>[];
   var $pos = state.pos;
@@ -227,10 +218,8 @@ List<String>? _row(State<String> state) {
     $list.add($1!);
     $pos = state.pos;
     String? $2;
-    final $pos1 = state.pos;
-    if ($pos1 < source.length) {
-      final $c = source.codeUnitAt($pos1);
-      if ($c == 44) {
+    if (state.pos < state.source.length) {
+      if (state.source.codeUnitAt(state.pos) == 44) {
         state.pos++;
         state.ok = true;
         $2 = ',';
@@ -238,7 +227,7 @@ List<String>? _row(State<String> state) {
     }
     if ($2 == null) {
       state.ok = false;
-      state.error = ErrExpected.tag($pos1, const Tag(','));
+      state.error = ErrExpected.tag(state.pos, const Tag(','));
     }
     if (!state.ok) {
       break;
@@ -257,15 +246,15 @@ String? _eol(State<String> state) {
   state.ok = false;
   final $pos = state.pos;
   if ($pos < source.length) {
-    var $c = source.codeUnitAt($pos);
-    if ($c == 0xA) {
+    var c = source.codeUnitAt($pos);
+    if (c == 0xA) {
       state.pos++;
       state.ok = true;
       $0 = '\n';
-    } else if ($c == 0xD) {
+    } else if (c == 0xD) {
       if ($pos + 1 < source.length) {
-        $c = source.codeUnitAt($pos + 1);
-        if ($c == 0xA) {
+        c = source.codeUnitAt($pos + 1);
+        if (c == 0xA) {
           state.pos += 2;
           state.ok = true;
           $0 = '\r\n';
@@ -276,7 +265,7 @@ String? _eol(State<String> state) {
         state.error = ErrUnexpected.eof(source.length);
       }
     } else {
-      state.error = ErrUnexpected.char($pos, Char($c));
+      state.error = ErrUnexpected.char($pos, Char(c));
     }
   } else {
     state.error = ErrUnexpected.eof(source.length);
@@ -307,12 +296,11 @@ List<List<String>>? _rows(State<String> state) {
       bool? $5;
       final $pos3 = state.pos;
       bool? $6;
-      final $pos4 = state.pos;
-      state.ok = state.source.atEnd($pos4);
+      state.ok = state.source.atEnd(state.pos);
       if (state.ok) {
         $6 = true;
       } else {
-        state.error = ErrExpected.eof($pos4);
+        state.error = ErrExpected.eof(state.pos);
       }
       if (!state.ok) {
         state.ok = true;
@@ -364,12 +352,11 @@ List<List<String>>? _parse(State<String> state) {
   $1 = _rows(state);
   if (state.ok) {
     bool? $2;
-    final $pos1 = state.pos;
-    state.ok = state.source.atEnd($pos1);
+    state.ok = state.source.atEnd(state.pos);
     if (state.ok) {
       $2 = true;
     } else {
-      state.error = ErrExpected.eof($pos1);
+      state.error = ErrExpected.eof(state.pos);
     }
     if (state.ok) {
       $0 = $1!;
@@ -468,7 +455,7 @@ abstract class Err {
             : y < x
                 ? x
                 : y;
-        final maxOffset = inner.map((e) => e.offset).reduce((max));
+        final maxOffset = inner.map((e) => e.offset).reduce(max);
         final farthest = inner.where((e) => e.offset == maxOffset);
         final offset = error.offset;
         final tag = error.tag;

@@ -31,7 +31,7 @@ import 'package:source_span/source_span.dart';
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
 List<List<String>> parse(String source) {
-    final state = StringState(source);
+  final state = StringState(source);
   final result = _parse(state);
   if (!state.ok) {
     final errors = Err.errorReport(state.error);
