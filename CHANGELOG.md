@@ -1,3 +1,7 @@
+## 0.1.7
+
+- Added parser `fast_csv_ex.dart`, which allows to configure the field separator
+
 ## 0.1.6
 
 - The parser has become a little faster after rebuilding with new version of `parser_builder`

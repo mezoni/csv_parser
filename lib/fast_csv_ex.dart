@@ -7,13 +7,25 @@ import 'package:source_span/source_span.dart';
 
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
-/// - The character `,` is used as a field separator
+/// - The field separator is parsed as specified in the `separator` argument
 /// - Line endings are `\n` or `\r\n`
 /// - The start and end of strings is the character `"`
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
-List<List<String>> parse(String source) {
+List<List<String>> parse(String source, {String separator = ','}) {
+  void check(String name, String value) {
+    if (value.runes.length != 1) {
+      throw ArgumentError.value(value, name, 'Must be 1 code point long');
+    }
+  }
+
+  check('separator', separator);
   final state = StringState(source);
+  final separatorChar = separator.runes.first;
+  state.context = _StateContext(
+      notTextChar: (int x) =>
+          !(x == 0xA || x == 0xD || x == 0x22 || x == separatorChar),
+      separator: separator);
   final result = _parse(state);
   if (!state.ok) {
     final errors = Err.errorReport(state.error);
@@ -35,7 +47,7 @@ String? _text(State<String> state) {
     var c = 0;
     while ($pos < $len) {
       c = source.runeAt($pos);
-      final v = !(c == 0xA || c == 0xD || c == 0x22 || c == 0x2C);
+      final v = (state.context as _StateContext).notTextChar(c);
       if (!v) {
         break;
       }
@@ -207,8 +219,22 @@ String? _field(State<String> state) {
   return $0;
 }
 
-List<String>? _row(State<String> state) {
+String? _separator(State<String> state) {
   final source = state.source;
+  String? $0;
+  final $pos = state.pos;
+  final $tag = (state.context as _StateContext).separator;
+  state.ok = source.startsWith($tag, $pos);
+  if (state.ok) {
+    state.pos += $tag.length;
+    $0 = $tag;
+  } else {
+    state.error = ErrExpected.tag($pos, Tag($tag));
+  }
+  return $0;
+}
+
+List<String>? _row(State<String> state) {
   List<String>? $0;
   final $list = <String>[];
   var $pos = state.pos;
@@ -222,16 +248,7 @@ List<String>? _row(State<String> state) {
     $list.add($1!);
     $pos = state.pos;
     String? $2;
-    final $3 = state.pos;
-    if ($3 < source.length && source.codeUnitAt($3) == 44) {
-      state.pos++;
-      state.ok = true;
-      $2 = ',';
-    }
-    if ($2 == null) {
-      state.ok = false;
-      state.error = ErrExpected.tag($3, const Tag(','));
-    }
+    $2 = _separator(state);
     if (!state.ok) {
       break;
     }
@@ -865,4 +882,12 @@ extension on String {
     state.error = ErrExpected.tag(pos, Tag(tag));
     return null;
   }
+}
+
+class _StateContext {
+  final bool Function(int) notTextChar;
+
+  final String separator;
+
+  _StateContext({required this.notTextChar, required this.separator});
 }
