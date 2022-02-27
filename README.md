@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.7
+Version: 0.1.8
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -89,12 +89,12 @@ import 'package:source_span/source_span.dart';
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
 /// - The character `,` is used as a field separator
-/// - Line endings are `\n` or `\r\n`
+/// - Line endings are `\n`, `\r\n` or '\r'
 /// - The start and end of strings is the character `"`
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
 List<List<String>> parse(String source) {
-    final state = StringState(source);
+  final state = StringState(source);
   final result = _parse(state);
   if (!state.ok) {
     final errors = Err.errorReport(state.error);
@@ -110,15 +110,17 @@ List<List<String>> parse(String source) {
 const _chars = Named(
     '_chars',
     Many0(Alt([
-      Value(0x22, Tag('""')),
       Satisfy(NotCharClass('["]')),
+      Value(0x22, Tag('""')),
     ])));
 
-const _empty = Named('_empty', Value<String, String>(''));
+const _closeQuote = Named('_closeQuote', Skip<String>([Tag('"'), _ws]));
 
-const _eol = Named('_eol', LineEnding());
+const _eol = Named('_eol', Alt([LineEnding(), Tag('\r')]));
 
-const _field = Named('_field', Alt([_text, _string, _empty]));
+const _field = Named('_field', Alt([_string, _text]));
+
+const _openQuote = Named('_openQuote', Skip<String>([_ws, Tag('"')]));
 
 const _parse = Named('_parse', Terminated(_rows, Eof<String>()));
 
@@ -129,11 +131,107 @@ const _rows = Named(
     Terminated(
         SeparatedList1(_row, Skip<String>([_eol, Not(Eof())])), Opt(_eol)));
 
-const _string =
-    Named('_string', Delimited(Tag('"'), Map$(_chars, _toString), Tag('"')));
+const _string = Named(
+    '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text = Named('_text', TakeWhile1(NotCharClass('[,"] | #xA | #xD')));
+const _text = Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')));
 
-const _toString = TX<List<int>, String>('String.fromCharCodes({{x}})');
+const _toString = TX<List<int>, String>('=> String.fromCharCodes(x);');
 
+const _ws = Named('_ws', SkipWhile(CharClass('#x20 | #x9')));
+
+```
+
+## Performance tests
+
+The files from the resource listed below were used to measure performance (excluding files with format violation).  
+
+https://people.sc.fsu.edu/~jburkardt/data/csv/csv.html
+
+Source code for testing procedures.
+
+```dart
+void _test1(int count) {
+  for (var i = 0; i < count; i++) {
+    for (var k = 0; k < _tables.length; k++) {
+      final table = _tables[k];
+      final res = CsvToListConverter(
+              allowInvalid: false, eol: '\n', shouldParseNumbers: false)
+          .convert(table);
+    }
+  }
+}
+
+void _test2(int count) {
+  for (var i = 0; i < count; i++) {
+    for (var k = 0; k < _tables.length; k++) {
+      final table = _tables[k];
+      final res = _fast_csv_ex.parse(table);
+    }
+  }
+}
+
+void _test3(int count) {
+  for (var i = 0; i < count; i++) {
+    for (var k = 0; k < _tables.length; k++) {
+      final table = _tables[k];
+      final res = _fast_csv.parse(table);
+    }
+  }
+}
+
+```
+
+Results:
+
+```
+List of files:
+---------------
+test_csv\addresses.csv
+test_csv\airtravel.csv
+test_csv\biostats.csv
+test_csv\cities.csv
+test_csv\crash_catalonia.csv
+test_csv\deniro.csv
+test_csv\example.csv
+test_csv\faithful.csv
+test_csv\ford_escort.csv
+test_csv\freshman_kgs.csv
+test_csv\freshman_lbs.csv
+test_csv\grades.csv
+test_csv\homes.csv
+test_csv\hooke.csv
+test_csv\hurricanes.csv
+test_csv\hw_25000.csv
+test_csv\lead_shot.csv
+test_csv\letter_frequency.csv
+test_csv\news_decline.csv
+test_csv\nile.csv
+test_csv\oscar_age_female.csv
+test_csv\snakes_count_10.csv
+test_csv\snakes_count_100.csv
+test_csv\snakes_count_1000.csv
+test_csv\snakes_count_10000.csv
+test_csv\tally_cab.csv
+test_csv\taxables.csv
+test_csv\trees.csv
+test_csv\zillow.csv
+---------------
+Parse in loop 5 times:
+Results:
+Time passed: 0.000, Test 'csv': 3186.384 ms
+Time passed: 3.188, Test 'fast_csv_ex': 1062.632 ms
+Time passed: 4.251, Test 'fast_csv': 875.816 ms
+Time passed: 5.127, Test 'csv': 3154.421 ms
+Time passed: 8.281, Test 'fast_csv_ex': 1077.965 ms
+Time passed: 9.359, Test 'fast_csv': 807.537 ms
+Time passed: 10.167, Test 'csv': 3133.889 ms
+Time passed: 13.301, Test 'fast_csv_ex': 1006.173 ms
+Time passed: 14.307, Test 'fast_csv': 824.004 ms
+Time passed: 15.131, Test 'csv': 3127.697 ms
+Time passed: 18.259, Test 'fast_csv_ex': 1018.105 ms
+Time passed: 19.277, Test 'fast_csv': 858.361 ms
+Time passed: 20.135, Test 'csv': 3156.331 ms
+Time passed: 23.292, Test 'fast_csv_ex': 1017.208 ms
+Time passed: 24.309, Test 'fast_csv': 821.534 ms
 ```

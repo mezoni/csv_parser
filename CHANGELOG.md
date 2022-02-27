@@ -1,3 +1,8 @@
+## 0.1.8
+
+- Non-configurable parser has become a little faster after rebuilding with new version of `parser_builder`
+- The updated version of the parsers is able to parse more data that does not fully conform with the specification (except for data with a structural format violation)
+
 ## 0.1.7
 
 - Added parser `fast_csv_ex.dart`, which allows to configure the field separator

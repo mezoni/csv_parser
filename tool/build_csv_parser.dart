@@ -26,7 +26,7 @@ import 'package:source_span/source_span.dart';
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
 /// - The character `,` is used as a field separator
-/// - Line endings are `\n` or `\r\n`
+/// - Line endings are `\n`, `\r\n` or '\r'
 /// - The start and end of strings is the character `"`
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
@@ -47,15 +47,17 @@ List<List<String>> parse(String source) {
 const _chars = Named(
     '_chars',
     Many0(Alt([
-      Value(0x22, Tag('""')),
       Satisfy(NotCharClass('["]')),
+      Value(0x22, Tag('""')),
     ])));
 
-const _empty = Named('_empty', Value<String, String>(''));
+const _closeQuote = Named('_closeQuote', Skip<String>([Tag('"'), _ws]));
 
-const _eol = Named('_eol', LineEnding());
+const _eol = Named('_eol', Alt([LineEnding(), Tag('\r')]));
 
-const _field = Named('_field', Alt([_text, _string, _empty]));
+const _field = Named('_field', Alt([_string, _text]));
+
+const _openQuote = Named('_openQuote', Skip<String>([_ws, Tag('"')]));
 
 const _parse = Named('_parse', Terminated(_rows, Eof<String>()));
 
@@ -66,9 +68,11 @@ const _rows = Named(
     Terminated(
         SeparatedList1(_row, Skip<String>([_eol, Not(Eof())])), Opt(_eol)));
 
-const _string =
-    Named('_string', Delimited(Tag('"'), Map$(_chars, _toString), Tag('"')));
+const _string = Named(
+    '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text = Named('_text', TakeWhile1(NotCharClass('[,"] | #xA | #xD')));
+const _text = Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')));
 
-const _toString = TX<List<int>, String>('String.fromCharCodes({{x}})');
+const _toString = TX<List<int>, String>('=> String.fromCharCodes(x);');
+
+const _ws = Named('_ws', SkipWhile(CharClass('#x20 | #x9')));
