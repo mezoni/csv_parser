@@ -1,3 +1,7 @@
+## 0.1.9
+
+- Slightly reduced parser size by rebuilding with new version of `parser_builder`
+
 ## 0.1.8
 
 - Non-configurable parser has become a little faster after rebuilding with new version of `parser_builder`
