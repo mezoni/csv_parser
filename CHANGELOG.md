@@ -1,6 +1,11 @@
+## 0.1.11
+
+- The parsers has been rebuilt using the new version of `parser_builder`
+- Minor changes in parser grammar
+
 ## 0.1.10
 
-- The parsers has been rebuilt using the new version of `parser_builder`.
+- The parsers has been rebuilt using the new version of `parser_builder`
 
 ## 0.1.9
 

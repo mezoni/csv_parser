@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.10
+Version: 0.1.11
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -89,12 +89,12 @@ import 'package:source_span/source_span.dart';
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
 /// - The character `,` is used as a field separator
-/// - Line endings are `\n`, `\r\n` or '\r'
+/// - Line endings are `\n`, `\r\n` or `\r`
 /// - The start and end of strings is the character `"`
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
 List<List<String>> parse(String source) {
-  final state = StringState(source);
+  final state = State(source);
   final result = _parse(state);
   if (!state.ok) {
     final errors = Err.errorReport(state.error);
@@ -110,26 +110,30 @@ List<List<String>> parse(String source) {
 const _chars = Named(
     '_chars',
     Many0(Alt([
-      Satisfy(NotCharClass('["]')),
+      NoneOf([0x22]),
       Value(0x22, Tag('""')),
     ])));
 
-const _closeQuote = Named('_closeQuote', Skip<String>([Tag('"'), _ws]));
+const _closeQuote = Named('_closeQuote', Skip<String>([_quote, _ws]));
+
+const _eof = Named('_eof', Eof<String>());
 
 const _eol = Named('_eol', Alt([LineEnding(), Tag('\r')]));
 
 const _field = Named('_field', Alt([_string, _text]));
 
-const _openQuote = Named('_openQuote', Skip<String>([_ws, Tag('"')]));
+const _openQuote = Named('_openQuote', Skip<String>([_ws, _quote]));
 
-const _parse = Named('_parse', Terminated(_rows, Eof<String>()));
+const _parse = Named('_parse', Terminated(_rows, _eof));
+
+const _quote = Named('_quote', Tag('"'));
 
 const _row = Named('_row', SeparatedList1(_field, Tag(',')));
 
 const _rows = Named(
     '_rows',
     Terminated(
-        SeparatedList1(_row, Skip<String>([_eol, Not(Eof())])), Opt(_eol)));
+        SeparatedList1(_row, Skip<String>([_eol, Not(_eof)])), Opt(_eol)));
 
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
@@ -219,19 +223,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3223.142 ms
-Time passed: 3.225, Test 'fast_csv_ex': 1105.707 ms
-Time passed: 4.331, Test 'fast_csv': 884.672 ms
-Time passed: 5.215, Test 'csv': 3222.903 ms
-Time passed: 8.438, Test 'fast_csv_ex': 1151.602 ms
-Time passed: 9.590, Test 'fast_csv': 847.008 ms
-Time passed: 10.437, Test 'csv': 3211.529 ms
-Time passed: 13.649, Test 'fast_csv_ex': 1063.984 ms
-Time passed: 14.713, Test 'fast_csv': 860.238 ms
-Time passed: 15.573, Test 'csv': 3191.367 ms
-Time passed: 18.764, Test 'fast_csv_ex': 1049.525 ms
-Time passed: 19.814, Test 'fast_csv': 882.388 ms
-Time passed: 20.696, Test 'csv': 3197.08 ms
-Time passed: 23.894, Test 'fast_csv_ex': 1049.68 ms
-Time passed: 24.943, Test 'fast_csv': 858.907 ms
+Time passed: 0.000, Test 'csv': 3083.182 ms
+Time passed: 3.085, Test 'fast_csv_ex': 1046.114 ms
+Time passed: 4.131, Test 'fast_csv': 815.618 ms
+Time passed: 4.947, Test 'csv': 3087.198 ms
+Time passed: 8.034, Test 'fast_csv_ex': 1002.957 ms
+Time passed: 9.037, Test 'fast_csv': 794.035 ms
+Time passed: 9.831, Test 'csv': 3061.818 ms
+Time passed: 12.893, Test 'fast_csv_ex': 1018.768 ms
+Time passed: 13.912, Test 'fast_csv': 793.17 ms
+Time passed: 14.705, Test 'csv': 3061.856 ms
+Time passed: 17.767, Test 'fast_csv_ex': 993.237 ms
+Time passed: 18.760, Test 'fast_csv': 785.567 ms
+Time passed: 19.546, Test 'csv': 3043.506 ms
+Time passed: 22.590, Test 'fast_csv_ex': 986.306 ms
+Time passed: 23.576, Test 'fast_csv': 783.82 ms
 ```

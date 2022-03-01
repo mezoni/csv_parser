@@ -73,7 +73,9 @@ const _chars = Named(
       Value(0x22, Tag('""')),
     ])));
 
-const _closeQuote = Named('_closeQuote', Skip<String>([Tag('"'), _ws]));
+const _closeQuote = Named('_closeQuote', Skip<String>([_quote, _ws]));
+
+const _eof = Named('_eof', Eof<String>());
 
 const _eol = Named('_eol', Alt([LineEnding(), Tag('\r')]));
 
@@ -82,16 +84,18 @@ const _field = Named('_field', Alt([_string, _text]));
 const _notTextChar =
     TX<int, bool>('(state.context as _StateContext).notTextChar');
 
-const _openQuote = Named('_openQuote', Skip<String>([_ws, Tag('"')]));
+const _openQuote = Named('_openQuote', Skip<String>([_ws, _quote]));
 
-const _parse = Named('_parse', Terminated(_rows, Eof<String>()));
+const _parse = Named('_parse', Terminated(_rows, _eof));
+
+const _quote = Named('_quote', Tag('"'));
 
 const _row = Named('_row', SeparatedList1(_field, _separator));
 
 const _rows = Named(
     '_rows',
     Terminated(
-        SeparatedList1(_row, Skip<String>([_eol, Not(Eof())])), Opt(_eol)));
+        SeparatedList1(_row, Skip<String>([_eol, Not(_eof)])), Opt(_eol)));
 
 const _separator = Named(
     '_separator', TagEx(TX('=> (state.context as _StateContext).separator;')));

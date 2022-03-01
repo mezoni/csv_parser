@@ -38,13 +38,26 @@ List<List<String>> parse(String source, {String separator = ','}) {
 
 bool? _ws(State<String> state) {
   bool? $0;
+  var $c = state.ch;
   bool $test(int x) => x == 0x9 || x == 0x20;
-  while (state.ch != State.eof && $test(state.ch)) {
-    state.nextChar();
+  while ($c != State.eof && $test($c)) {
+    $c = state.nextChar();
   }
   state.ok = true;
   if (state.ok) {
     $0 = true;
+  }
+  return $0;
+}
+
+String? _quote(State<String> state) {
+  String? $0;
+  state.ok = state.ch == 0x22;
+  if (state.ok) {
+    state.nextChar();
+    $0 = '"';
+  } else {
+    state.error = ErrExpected.tag(state.pos, const Tag('"'));
   }
   return $0;
 }
@@ -57,13 +70,7 @@ bool? _openQuote(State<String> state) {
   $1 = _ws(state);
   if (state.ok) {
     String? $2;
-    state.ok = state.ch == 0x22;
-    if (state.ok) {
-      state.nextChar();
-      $2 = '"';
-    } else {
-      state.error = ErrExpected.tag(state.pos, const Tag('"'));
-    }
+    $2 = _quote(state);
     if (state.ok) {
       $0 = true;
     }
@@ -82,14 +89,14 @@ List<int>? _chars(State<String> state) {
     int? $1;
     for (;;) {
       int? $2;
-      if (state.ch != State.eof) {
-        final c = state.ch;
-        state.ok = c != 0x22;
+      final $c = state.ch;
+      if ($c != State.eof) {
+        state.ok = $c != 0x22;
         if (state.ok) {
-          $2 = state.ch;
+          $2 = $c;
           state.nextChar();
         } else {
-          state.error = ErrUnexpected.char(state.pos, Char(state.ch));
+          state.error = ErrUnexpected.char(state.pos, Char($c));
         }
       } else {
         state.ok = false;
@@ -137,13 +144,7 @@ bool? _closeQuote(State<String> state) {
   final $pos = state.pos;
   final $ch = state.ch;
   String? $1;
-  state.ok = state.ch == 0x22;
-  if (state.ok) {
-    state.nextChar();
-    $1 = '"';
-  } else {
-    state.error = ErrExpected.tag(state.pos, const Tag('"'));
-  }
+  $1 = _quote(state);
   if (state.ok) {
     bool? $2;
     $2 = _ws(state);
@@ -190,9 +191,10 @@ String? _string(State<String> state) {
 String? _text(State<String> state) {
   String? $0;
   final $pos = state.pos;
+  var $c = state.ch;
   final $test = (state.context as _StateContext).notTextChar;
-  while (state.ch != State.eof && $test(state.ch)) {
-    state.nextChar();
+  while ($c != State.eof && $test($c)) {
+    $c = state.nextChar();
   }
   state.ok = true;
   if (state.ok) {
@@ -323,6 +325,17 @@ String? _eol(State<String> state) {
   return $0;
 }
 
+bool? _eof(State<String> state) {
+  bool? $0;
+  state.ok = state.source.atEnd(state.pos);
+  if (state.ok) {
+    $0 = true;
+  } else {
+    state.error = ErrExpected.eof(state.pos);
+  }
+  return $0;
+}
+
 List<List<String>>? _rows(State<String> state) {
   List<List<String>>? $0;
   final $pos = state.pos;
@@ -352,19 +365,13 @@ List<List<String>>? _rows(State<String> state) {
       final $pos3 = state.pos;
       final $ch3 = state.ch;
       bool? $6;
-      state.ok = state.source.atEnd(state.pos);
+      $6 = _eof(state);
+      state.ok = !state.ok;
       if (state.ok) {
-        $6 = true;
-      } else {
-        state.error = ErrExpected.eof(state.pos);
-      }
-      if (!state.ok) {
-        state.ok = true;
         $5 = true;
       } else {
         state.pos = $pos3;
         state.ch = $ch3;
-        state.ok = false;
         state.error = ErrUnknown(state.pos);
       }
       if (state.ok) {
@@ -412,12 +419,7 @@ List<List<String>>? _parse(State<String> state) {
   $1 = _rows(state);
   if (state.ok) {
     bool? $2;
-    state.ok = state.source.atEnd(state.pos);
-    if (state.ok) {
-      $2 = true;
-    } else {
-      state.error = ErrExpected.eof(state.pos);
-    }
+    $2 = _eof(state);
     if (state.ok) {
       $0 = $1!;
     }
