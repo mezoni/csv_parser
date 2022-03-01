@@ -77,7 +77,7 @@ const _closeQuote = Named('_closeQuote', Skip<String>([_quote, _ws]));
 
 const _eof = Named('_eof', Eof<String>());
 
-const _eol = Named('_eol', Alt([LineEnding(), Tag('\r')]));
+const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 

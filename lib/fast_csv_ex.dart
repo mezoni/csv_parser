@@ -270,57 +270,30 @@ List<String>? _row(State<String> state) {
 }
 
 String? _eol(State<String> state) {
+  final source = state.source;
   String? $0;
-  for (;;) {
-    String? $1;
-    state.ok = false;
-    switch (state.ch) {
-      case 0xA:
-        state.nextChar();
-        state.ok = true;
-        $1 = '\n';
-        break;
-      case 0xD:
-        final pos = state.pos;
-        final ch = state.ch;
-        switch (state.nextChar()) {
-          case 0xA:
-            state.nextChar();
-            state.ok = true;
-            $1 = '\r\n';
-            break;
-          default:
-            state.error = ErrExpected.char(state.pos, const Char(0xA));
-            state.pos = pos;
-            state.ch = ch;
-        }
-        break;
-      case State.eof:
-        state.error = ErrUnexpected.eof(state.pos);
-        break;
-      default:
-        state.error = ErrUnexpected.char(state.pos, Char(state.ch));
-    }
-    if (state.ok) {
-      $0 = $1;
+  switch (state.ch) {
+    case 10:
+      state.readChar(state.pos + 1);
+      $0 = '\n';
       break;
-    }
-    final $2 = state.error;
-    String? $3;
-    state.ok = state.ch == 0xD;
-    if (state.ok) {
-      state.nextChar();
-      $3 = '\r';
-    } else {
-      state.error = ErrExpected.tag(state.pos, const Tag('\r'));
-    }
-    if (state.ok) {
-      $0 = $3;
+    case 13:
+      if (source.startsWith('\r\n', state.pos)) {
+        state.readChar(state.pos + 2);
+        $0 = '\r\n';
+        break;
+      }
+      state.readChar(state.pos + 1);
+      $0 = '\r';
       break;
-    }
-    final $4 = state.error;
-    state.error = ErrCombined(state.pos, [$2, $4]);
-    break;
+  }
+  state.ok = $0 != null;
+  if (!state.ok) {
+    state.error = ErrCombined(state.pos, [
+      ErrExpected.tag(state.pos, Tag('\n')),
+      ErrExpected.tag(state.pos, Tag('\r\n')),
+      ErrExpected.tag(state.pos, Tag('\r'))
+    ]);
   }
   return $0;
 }
@@ -477,7 +450,7 @@ class Char {
 
   @override
   String toString() {
-    final s = String.fromCharCode(charCode);
+    final s = String.fromCharCode(charCode)._escape();
     return '\'$s\'';
   }
 }
@@ -809,7 +782,8 @@ class Tag {
 
   @override
   String toString() {
-    return name;
+    final s = name._escape();
+    return '\'$s\'';
   }
 }
 
@@ -879,6 +853,24 @@ extension on String {
   // ignore: unused_element
   String slice(int start, int end) {
     return substring(start, end);
+  }
+
+  String _escape() {
+    final map = {
+      '\b': '\\b',
+      '\f': '\\f',
+      '\n': '\\n',
+      '\r': '\\t',
+      '\t': '\\t',
+      '\v': '\\v',
+    };
+
+    var s = this;
+    for (final key in map.keys) {
+      s = s.replaceAll(key, map[key]!);
+    }
+
+    return '\'$s\'';
   }
 }
 

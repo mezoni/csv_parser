@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.11
+Version: 0.1.12
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -118,7 +118,7 @@ const _closeQuote = Named('_closeQuote', Skip<String>([_quote, _ws]));
 
 const _eof = Named('_eof', Eof<String>());
 
-const _eol = Named('_eol', Alt([LineEnding(), Tag('\r')]));
+const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 
