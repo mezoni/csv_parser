@@ -47,7 +47,7 @@ List<List<String>> parse(String source) {
 const _chars = Named(
     '_chars',
     Many0(Alt([
-      Satisfy(NotCharClass('["]')),
+      NoneOf([0x22]),
       Value(0x22, Tag('""')),
     ])));
 

@@ -1,3 +1,7 @@
+## 0.1.10
+
+- The parsers has been rebuilt using the new version of `parser_builder`.
+
 ## 0.1.9
 
 - Slightly reduced parser size by rebuilding with new version of `parser_builder`
