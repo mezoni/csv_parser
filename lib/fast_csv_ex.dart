@@ -37,13 +37,18 @@ List<List<String>> parse(String source, {String separator = ','}) {
 }
 
 bool? _ws(State<String> state) {
+  final source = state.source;
   bool? $0;
-  var $c = state.ch;
-  bool $test(int x) => x == 0x9 || x == 0x20;
-  while ($c != State.eof && $test($c)) {
-    $c = state.nextChar();
-  }
   state.ok = true;
+  bool $test(int x) => x == 0x9 || x == 0x20;
+  while (state.pos < source.length) {
+    var c = source.codeUnitAt(state.pos);
+    c = c <= 0xD7FF || c >= 0xE000 ? c : source.runeAt(state.pos);
+    if (!$test(c)) {
+      break;
+    }
+    state.pos += c > 0xffff ? 2 : 1;
+  }
   if (state.ok) {
     $0 = true;
   }
@@ -51,12 +56,19 @@ bool? _ws(State<String> state) {
 }
 
 String? _quote(State<String> state) {
+  final source = state.source;
   String? $0;
-  state.ok = state.ch == 0x22;
-  if (state.ok) {
-    state.nextChar();
-    $0 = '"';
-  } else {
+  state.ok = false;
+  if (state.pos < source.length) {
+    var c = source.codeUnitAt(state.pos);
+    c = c <= 0xD7FF || c >= 0xE000 ? c : source.runeAt(state.pos);
+    if (c == 0x22) {
+      state.ok = true;
+      state.pos++;
+      $0 = '"';
+    }
+  }
+  if (!state.ok) {
     state.error = ErrExpected.tag(state.pos, const Tag('"'));
   }
   return $0;
@@ -65,7 +77,6 @@ String? _quote(State<String> state) {
 bool? _openQuote(State<String> state) {
   bool? $0;
   final $pos = state.pos;
-  final $ch = state.ch;
   bool? $1;
   $1 = _ws(state);
   if (state.ok) {
@@ -77,29 +88,30 @@ bool? _openQuote(State<String> state) {
   }
   if (!state.ok) {
     state.pos = $pos;
-    state.ch = $ch;
   }
   return $0;
 }
 
 List<int>? _chars(State<String> state) {
+  final source = state.source;
   List<int>? $0;
   final $list = <int>[];
   for (;;) {
     int? $1;
     for (;;) {
       int? $2;
-      final $c = state.ch;
-      if ($c != State.eof) {
-        state.ok = $c != 0x22;
-        if (state.ok) {
-          $2 = $c;
-          state.nextChar();
+      state.ok = false;
+      if (state.pos < source.length) {
+        var c = source.codeUnitAt(state.pos);
+        c = c <= 0xD7FF || c >= 0xE000 ? c : source.runeAt(state.pos);
+        if (c != 0x22) {
+          state.pos += c > 0xffff ? 2 : 1;
+          state.ok = true;
+          $2 = c;
         } else {
-          state.error = ErrUnexpected.char(state.pos, Char($c));
+          state.error = ErrUnexpected.char(state.pos, Char(c));
         }
       } else {
-        state.ok = false;
         state.error = ErrUnexpected.eof(state.pos);
       }
       if (state.ok) {
@@ -109,11 +121,17 @@ List<int>? _chars(State<String> state) {
       final $3 = state.error;
       int? $4;
       String? $6;
-      state.ok = state.ch == 0x22 && state.source.startsWith('""', state.pos);
-      if (state.ok) {
-        state.readChar(state.pos + 2);
-        $6 = '""';
-      } else {
+      state.ok = false;
+      if (state.pos < source.length) {
+        var c = source.codeUnitAt(state.pos);
+        c = c <= 0xD7FF || c >= 0xE000 ? c : source.runeAt(state.pos);
+        if (c == 0x22 && source.startsWith('""', state.pos)) {
+          state.ok = true;
+          state.pos += 2;
+          $6 = '""';
+        }
+      }
+      if (!state.ok) {
         state.error = ErrExpected.tag(state.pos, const Tag('""'));
       }
       if (state.ok) {
@@ -142,7 +160,6 @@ List<int>? _chars(State<String> state) {
 bool? _closeQuote(State<String> state) {
   bool? $0;
   final $pos = state.pos;
-  final $ch = state.ch;
   String? $1;
   $1 = _quote(state);
   if (state.ok) {
@@ -154,7 +171,6 @@ bool? _closeQuote(State<String> state) {
   }
   if (!state.ok) {
     state.pos = $pos;
-    state.ch = $ch;
   }
   return $0;
 }
@@ -162,7 +178,6 @@ bool? _closeQuote(State<String> state) {
 String? _string(State<String> state) {
   String? $0;
   final $pos = state.pos;
-  final $ch = state.ch;
   bool? $1;
   $1 = _openQuote(state);
   if (state.ok) {
@@ -183,22 +198,26 @@ String? _string(State<String> state) {
   }
   if (!state.ok) {
     state.pos = $pos;
-    state.ch = $ch;
   }
   return $0;
 }
 
 String? _text(State<String> state) {
+  final source = state.source;
   String? $0;
   final $pos = state.pos;
-  var $c = state.ch;
   final $test = (state.context as _StateContext).notTextChar;
-  while ($c != State.eof && $test($c)) {
-    $c = state.nextChar();
+  while (state.pos < source.length) {
+    var c = source.codeUnitAt(state.pos);
+    c = c <= 0xD7FF || c >= 0xE000 ? c : source.runeAt(state.pos);
+    if (!$test(c)) {
+      break;
+    }
+    state.pos += c > 0xffff ? 2 : 1;
   }
   state.ok = true;
   if (state.ok) {
-    $0 = state.source.substring($pos, state.pos);
+    $0 = source.substring($pos, state.pos);
   }
   return $0;
 }
@@ -227,12 +246,13 @@ String? _field(State<String> state) {
 }
 
 String? _separator(State<String> state) {
+  final source = state.source;
   String? $0;
   String $get(dynamic x) => (state.context as _StateContext).separator;
   final $tag = $get(null);
-  state.ok = state.source.startsWith($tag, state.pos);
+  state.ok = source.startsWith($tag, state.pos);
   if (state.ok) {
-    state.readChar(state.pos + $tag.length);
+    state.pos += $tag.length;
     $0 = $tag;
   } else {
     state.error = ErrExpected.tag(state.pos, Tag($tag));
@@ -243,19 +263,16 @@ String? _separator(State<String> state) {
 List<String>? _row(State<String> state) {
   List<String>? $0;
   var $pos = state.pos;
-  var $ch = state.ch;
   final $list = <String>[];
   for (;;) {
     String? $1;
     $1 = _field(state);
     if (!state.ok) {
       state.pos = $pos;
-      state.ch = $ch;
       break;
     }
     $list.add($1!);
     $pos = state.pos;
-    $ch = state.ch;
     String? $2;
     $2 = _separator(state);
     if (!state.ok) {
@@ -272,24 +289,29 @@ List<String>? _row(State<String> state) {
 String? _eol(State<String> state) {
   final source = state.source;
   String? $0;
-  switch (state.ch) {
-    case 10:
-      state.readChar(state.pos + 1);
-      $0 = '\n';
-      break;
-    case 13:
-      if (source.startsWith('\r\n', state.pos)) {
-        state.readChar(state.pos + 2);
-        $0 = '\r\n';
+  final $pos = state.pos;
+  if (state.pos < source.length) {
+    var c = source.codeUnitAt($pos);
+    c = c <= 0xD7FF || c >= 0xE000 ? c : source.runeAt($pos);
+    switch (c) {
+      case 10:
+        state.pos++;
+        $0 = '\n';
         break;
-      }
-      state.readChar(state.pos + 1);
-      $0 = '\r';
-      break;
+      case 13:
+        if (source.startsWith('\r\n', $pos)) {
+          state.pos += 2;
+          $0 = '\r\n';
+          break;
+        }
+        state.pos++;
+        $0 = '\r';
+        break;
+    }
   }
   state.ok = $0 != null;
   if (!state.ok) {
-    state.error = ErrCombined(state.pos, [
+    state.error = ErrCombined($pos, [
       ErrExpected.tag(state.pos, Tag('\n')),
       ErrExpected.tag(state.pos, Tag('\r\n')),
       ErrExpected.tag(state.pos, Tag('\r'))
@@ -312,31 +334,25 @@ bool? _eof(State<String> state) {
 List<List<String>>? _rows(State<String> state) {
   List<List<String>>? $0;
   final $pos = state.pos;
-  final $ch = state.ch;
   List<List<String>>? $1;
   var $pos1 = state.pos;
-  var $ch1 = state.ch;
   final $list = <List<String>>[];
   for (;;) {
     List<String>? $2;
     $2 = _row(state);
     if (!state.ok) {
       state.pos = $pos1;
-      state.ch = $ch1;
       break;
     }
     $list.add($2!);
     $pos1 = state.pos;
-    $ch1 = state.ch;
     bool? $3;
     final $pos2 = state.pos;
-    final $ch2 = state.ch;
     String? $4;
     $4 = _eol(state);
     if (state.ok) {
       bool? $5;
       final $pos3 = state.pos;
-      final $ch3 = state.ch;
       bool? $6;
       $6 = _eof(state);
       state.ok = !state.ok;
@@ -344,7 +360,6 @@ List<List<String>>? _rows(State<String> state) {
         $5 = true;
       } else {
         state.pos = $pos3;
-        state.ch = $ch3;
         state.error = ErrUnknown(state.pos);
       }
       if (state.ok) {
@@ -353,7 +368,6 @@ List<List<String>>? _rows(State<String> state) {
     }
     if (!state.ok) {
       state.pos = $pos2;
-      state.ch = $ch2;
     }
     if (!state.ok) {
       break;
@@ -379,7 +393,6 @@ List<List<String>>? _rows(State<String> state) {
   }
   if (!state.ok) {
     state.pos = $pos;
-    state.ch = $ch;
   }
   return $0;
 }
@@ -387,7 +400,6 @@ List<List<String>>? _rows(State<String> state) {
 List<List<String>>? _parse(State<String> state) {
   List<List<String>>? $0;
   final $pos = state.pos;
-  final $ch = state.ch;
   List<List<String>>? $1;
   $1 = _rows(state);
   if (state.ok) {
@@ -399,7 +411,6 @@ List<List<String>>? _parse(State<String> state) {
   }
   if (!state.ok) {
     state.pos = $pos;
-    state.ch = $ch;
   }
   return $0;
 }
@@ -727,11 +738,7 @@ abstract class ErrWithTagAndErrors extends ErrWithErrors {
 }
 
 class State<T> {
-  static const eof = 0x110000;
-
   dynamic context;
-
-  int ch = eof;
 
   Err error = ErrUnknown(0);
 
@@ -741,12 +748,7 @@ class State<T> {
 
   final T source;
 
-  State(this.source) {
-    if (this is State<String>) {
-      final this_ = this as State<String>;
-      ch = this_.readChar(0);
-    }
-  }
+  State(this.source);
 
   @override
   String toString() {
@@ -787,65 +789,26 @@ class Tag {
   }
 }
 
-extension on State<String> {
-  @pragma('vm:prefer-inline')
-  // ignore: unused_element
-  int getChar(int index) {
-    if (index < source.length) {
-      final c = source.codeUnitAt(index);
-      return c <= 0xD7FF || c >= 0xE000 ? c : _getChar32(c, index + 1);
-    } else {
-      return State.eof;
-    }
-  }
-
-  @pragma('vm:prefer-inline')
-  // ignore: unused_element
-  int nextChar() {
-    final index = pos + (ch > 0xffff ? 2 : 1);
-    if (index < source.length) {
-      pos = index;
-      final c = source.codeUnitAt(index);
-      ch = c <= 0xD7FF || c >= 0xE000 ? c : _getChar32(c, index + 1);
-    } else {
-      pos = source.length;
-      ch = State.eof;
-    }
-    return ch;
-  }
-
-  @pragma('vm:prefer-inline')
-  // ignore: unused_element
-  int readChar(int index) {
-    if (index < source.length) {
-      pos = index;
-      final c = source.codeUnitAt(index);
-      ch = c <= 0xD7FF || c >= 0xE000 ? c : _getChar32(c, index + 1);
-    } else {
-      pos = source.length;
-      ch = State.eof;
-    }
-    return ch;
-  }
-
-  @pragma('vm:prefer-inline')
-  int _getChar32(int c, int index) {
-    if (index < source.length) {
-      final c2 = source.codeUnitAt(index);
-      if ((c2 & 0xfc00) == 0xdc00) {
-        return 0x10000 + ((c & 0x3ff) << 10) + (c2 & 0x3ff);
-      }
-    }
-    return State.eof;
-  }
-}
-
 extension on String {
   /// Returns `true` if [pos] points to the end of the string (or beyond).
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   bool atEnd(int pos) {
     return pos >= length;
+  }
+
+  @pragma('vm:prefer-inline')
+  // ignore: unused_element
+  int runeAt(int index) {
+    final c1 = codeUnitAt(index);
+    index++;
+    if ((c1 & 0xfc00) == 0xd800 && index < length) {
+      final c2 = codeUnitAt(index);
+      if ((c2 & 0xfc00) == 0xdc00) {
+        return 0x10000 + ((c1 & 0x3ff) << 10) + (c2 & 0x3ff);
+      }
+    }
+    return c1;
   }
 
   /// Returns a slice (substring) of the string from [start] to [end].
