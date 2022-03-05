@@ -197,16 +197,17 @@ String? _string(State<String> state) {
 String? _text(State<String> state) {
   final source = state.source;
   String? $0;
-  state.ok = true;
   final $pos = state.pos;
   //
   while (state.pos < source.length) {
-    final c = source.codeUnitAt(state.pos);
+    var c = source.codeUnitAt(state.pos);
+    c = c & 0xfc00 != 0xd800 ? c : source.runeAt(state.pos);
     if (!!(c == 10 || c == 13 || c == 34 || c == 44)) {
       break;
     }
-    state.pos++;
+    state.pos += c > 0xffff ? 2 : 1;
   }
+  state.ok = true;
   if (state.ok) {
     $0 = $pos == state.pos ? '' : source.substring($pos, state.pos);
   }

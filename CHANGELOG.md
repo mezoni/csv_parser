@@ -1,3 +1,7 @@
+## 0.1.18
+
+- The parsers has been rebuilt using the new version of `parser_builder` after fixing a bug in `parser builder`
+
 ## 0.1.17
 
 - The parser has become a much faster after rebuilding with new version of `parser_builder`
