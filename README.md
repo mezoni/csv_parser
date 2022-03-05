@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.14
+Version: 0.1.17
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -114,7 +114,7 @@ const _chars = Named(
       Value(0x22, Tag('""')),
     ])));
 
-const _closeQuote = Named('_closeQuote', Skip<String>([_quote, _ws]));
+const _closeQuote = Named('_closeQuote', Sequence<String>([_quote, _ws]));
 
 const _eof = Named('_eof', Eof<String>());
 
@@ -122,7 +122,9 @@ const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 
-const _openQuote = Named('_openQuote', Skip<String>([_ws, _quote]));
+const _inline = '@pragma(\'vm:prefer-inline\')';
+
+const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
 const _parse = Named('_parse', Terminated(_rows, _eof));
 
@@ -130,24 +132,27 @@ const _quote = Named('_quote', Tag('"'));
 
 const _row = Named('_row', SeparatedList1(_field, Tag(',')));
 
-const _rows = Named(
-    '_rows',
-    Terminated(
-        SeparatedList1(_row, Skip<String>([_eol, Not(_eof)])), Opt(_eol)));
+const _rowEnding = Named('_rowEnding', Sequence<String>([_eol, Not(_eof)]));
+
+const _rows =
+    Named('_rows', Terminated(SeparatedList1(_row, _rowEnding), Opt(_eol)));
 
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text = Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')));
+const _text =
+    Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')), [_inline]);
 
-const _toString = TX<List<int>, String>('=> String.fromCharCodes(x);');
+const _toString =
+    ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');
 
-const _ws = Named('_ws', SkipWhile(CharClass('#x20 | #x9')));
+const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));
 
 ```
 
 ## Performance tests
 
+The comparison was made with the following CSV parser: [`csv`](https://pub.dev/packages/csv).  
 The files from the resource listed below were used to measure performance (excluding files with format violation).  
 
 https://people.sc.fsu.edu/~jburkardt/data/csv/csv.html
@@ -223,19 +228,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3059.633 ms
-Time passed: 3.061, Test 'fast_csv_ex': 1017.928 ms
-Time passed: 4.079, Test 'fast_csv': 793.714 ms
-Time passed: 4.873, Test 'csv': 3074.521 ms
-Time passed: 7.948, Test 'fast_csv_ex': 970.925 ms
-Time passed: 8.919, Test 'fast_csv': 764.041 ms
-Time passed: 9.683, Test 'csv': 3056.287 ms
-Time passed: 12.739, Test 'fast_csv_ex': 983.041 ms
-Time passed: 13.722, Test 'fast_csv': 755.673 ms
-Time passed: 14.478, Test 'csv': 3059.819 ms
-Time passed: 17.538, Test 'fast_csv_ex': 966.967 ms
-Time passed: 18.505, Test 'fast_csv': 759.686 ms
-Time passed: 19.265, Test 'csv': 3034.732 ms
-Time passed: 22.299, Test 'fast_csv_ex': 957.934 ms
-Time passed: 23.257, Test 'fast_csv': 766.569 ms
+Time passed: 0.000, Test 'csv': 3112.751 ms
+Time passed: 3.115, Test 'fast_csv_ex': 951.579 ms
+Time passed: 4.066, Test 'fast_csv': 634.609 ms
+Time passed: 4.701, Test 'csv': 3122.066 ms
+Time passed: 7.823, Test 'fast_csv_ex': 933.851 ms
+Time passed: 8.757, Test 'fast_csv': 639.485 ms
+Time passed: 9.397, Test 'csv': 3099.913 ms
+Time passed: 12.496, Test 'fast_csv_ex': 943.859 ms
+Time passed: 13.440, Test 'fast_csv': 640.753 ms
+Time passed: 14.081, Test 'csv': 3076.927 ms
+Time passed: 17.158, Test 'fast_csv_ex': 924.359 ms
+Time passed: 18.083, Test 'fast_csv': 641.662 ms
+Time passed: 18.724, Test 'csv': 3053.688 ms
+Time passed: 21.778, Test 'fast_csv_ex': 933.993 ms
+Time passed: 22.712, Test 'fast_csv': 619.963 ms
 ```

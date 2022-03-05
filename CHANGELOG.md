@@ -1,3 +1,15 @@
+## 0.1.17
+
+- The parser has become a much faster after rebuilding with new version of `parser_builder`
+
+## 0.1.16
+
+- The parser has become a little faster after rebuilding with new version of `parser_builder`
+
+## 0.1.15
+
+- The parsers has been rebuilt using the new version of `parser_builder`
+
 ## 0.1.14
 
 - The parser has become a little faster after rebuilding with new version of `parser_builder`

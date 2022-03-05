@@ -51,7 +51,7 @@ const _chars = Named(
       Value(0x22, Tag('""')),
     ])));
 
-const _closeQuote = Named('_closeQuote', Skip<String>([_quote, _ws]));
+const _closeQuote = Named('_closeQuote', Sequence<String>([_quote, _ws]));
 
 const _eof = Named('_eof', Eof<String>());
 
@@ -59,7 +59,9 @@ const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 
-const _openQuote = Named('_openQuote', Skip<String>([_ws, _quote]));
+const _inline = '@pragma(\'vm:prefer-inline\')';
+
+const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
 const _parse = Named('_parse', Terminated(_rows, _eof));
 
@@ -67,16 +69,18 @@ const _quote = Named('_quote', Tag('"'));
 
 const _row = Named('_row', SeparatedList1(_field, Tag(',')));
 
-const _rows = Named(
-    '_rows',
-    Terminated(
-        SeparatedList1(_row, Skip<String>([_eol, Not(_eof)])), Opt(_eol)));
+const _rowEnding = Named('_rowEnding', Sequence<String>([_eol, Not(_eof)]));
+
+const _rows =
+    Named('_rows', Terminated(SeparatedList1(_row, _rowEnding), Opt(_eol)));
 
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text = Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')));
+const _text =
+    Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')), [_inline]);
 
-const _toString = TX<List<int>, String>('=> String.fromCharCodes(x);');
+const _toString =
+    ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');
 
-const _ws = Named('_ws', SkipWhile(CharClass('#x20 | #x9')));
+const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));
