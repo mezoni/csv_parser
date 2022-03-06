@@ -59,8 +59,6 @@ const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 
-const _inline = '@pragma(\'vm:prefer-inline\')';
-
 const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
 const _parse = Named('_parse', Terminated(_rows, _eof));
@@ -77,8 +75,7 @@ const _rows =
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text =
-    Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')), [_inline]);
+const _text = TakeWhile(NotCharClass('[,"] | #xA | #xD'));
 
 const _toString =
     ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');

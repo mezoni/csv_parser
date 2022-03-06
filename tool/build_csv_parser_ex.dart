@@ -103,7 +103,7 @@ const _separator = Named('_separator',
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text = Named('_text', TakeWhile(_notTextChar));
+const _text = TakeWhile(_notTextChar);
 
 const _toString =
     ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');

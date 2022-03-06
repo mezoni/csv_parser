@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.18
+Version: 0.1.20
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -122,8 +122,6 @@ const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 
-const _inline = '@pragma(\'vm:prefer-inline\')';
-
 const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
 const _parse = Named('_parse', Terminated(_rows, _eof));
@@ -140,8 +138,7 @@ const _rows =
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text =
-    Named('_text', TakeWhile(NotCharClass('[,"] | #xA | #xD')), [_inline]);
+const _text = TakeWhile(NotCharClass('[,"] | #xA | #xD'));
 
 const _toString =
     ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');
@@ -228,19 +225,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3112.751 ms
-Time passed: 3.115, Test 'fast_csv_ex': 951.579 ms
-Time passed: 4.066, Test 'fast_csv': 634.609 ms
-Time passed: 4.701, Test 'csv': 3122.066 ms
-Time passed: 7.823, Test 'fast_csv_ex': 933.851 ms
-Time passed: 8.757, Test 'fast_csv': 639.485 ms
-Time passed: 9.397, Test 'csv': 3099.913 ms
-Time passed: 12.496, Test 'fast_csv_ex': 943.859 ms
-Time passed: 13.440, Test 'fast_csv': 640.753 ms
-Time passed: 14.081, Test 'csv': 3076.927 ms
-Time passed: 17.158, Test 'fast_csv_ex': 924.359 ms
-Time passed: 18.083, Test 'fast_csv': 641.662 ms
-Time passed: 18.724, Test 'csv': 3053.688 ms
-Time passed: 21.778, Test 'fast_csv_ex': 933.993 ms
-Time passed: 22.712, Test 'fast_csv': 619.963 ms
+Time passed: 0.000, Test 'csv': 3102.712 ms
+Time passed: 3.104, Test 'fast_csv_ex': 897.279 ms
+Time passed: 4.002, Test 'fast_csv': 685.702 ms
+Time passed: 4.687, Test 'csv': 3091.936 ms
+Time passed: 7.779, Test 'fast_csv_ex': 862.66 ms
+Time passed: 8.642, Test 'fast_csv': 693.172 ms
+Time passed: 9.335, Test 'csv': 3074.421 ms
+Time passed: 12.410, Test 'fast_csv_ex': 872.837 ms
+Time passed: 13.283, Test 'fast_csv': 694.097 ms
+Time passed: 13.977, Test 'csv': 3041.414 ms
+Time passed: 17.018, Test 'fast_csv_ex': 853.833 ms
+Time passed: 17.872, Test 'fast_csv': 697.276 ms
+Time passed: 18.570, Test 'csv': 3022.498 ms
+Time passed: 21.592, Test 'fast_csv_ex': 867.061 ms
+Time passed: 22.459, Test 'fast_csv': 671.663 ms
 ```

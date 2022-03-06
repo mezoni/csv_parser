@@ -28,10 +28,10 @@ bool? _ws(State<String> state) {
   final source = state.source;
   bool? $0;
   state.ok = true;
-  //
   while (state.pos < source.length) {
     final c = source.codeUnitAt(state.pos);
-    if (!(c == 9 || c == 32)) {
+    final ok = c == 9 || c == 32;
+    if (!ok) {
       break;
     }
     state.pos++;
@@ -48,7 +48,7 @@ String? _quote(State<String> state) {
   state.ok = false;
   if (state.pos < source.length) {
     final c = source.codeUnitAt(state.pos);
-    if (c == 0x22) {
+    if (c == 34) {
       state.pos++;
       state.ok = true;
       $0 = '"';
@@ -86,53 +86,49 @@ List<int>? _chars(State<String> state) {
   final $list = <int>[];
   for (;;) {
     int? $1;
-    for (;;) {
-      int? $2;
-      state.ok = false;
-      if (state.pos < source.length) {
-        var c = source.codeUnitAt(state.pos);
-        c = c & 0xfc00 != 0xd800 ? c : source.runeAt(state.pos);
-        if ((c != 0x22)) {
-          state.pos += c > 0xffff ? 2 : 1;
-          state.ok = true;
-          $2 = c;
-        } else if (!state.opt) {
-          state.error = ErrUnexpected.char(state.pos, Char(c));
-        }
-      } else if (!state.opt) {
-        state.error = ErrUnexpected.eof(state.pos);
+    int? $2;
+    state.ok = false;
+    if (state.pos < source.length) {
+      var c = source.codeUnitAt(state.pos);
+      if (c > 0xd7ff) {
+        c = source.runeAt(state.pos);
       }
+      state.ok = c != 34;
       if (state.ok) {
-        $1 = $2;
-        break;
+        state.pos += c > 0xffff ? 2 : 1;
+        $2 = c;
+      } else if (!state.opt) {
+        state.error = ErrUnexpected.char(state.pos, Char(c));
       }
-      final $3 = state.error;
-      int? $4;
-      String? $6;
+    } else if (!state.opt) {
+      state.error = ErrUnexpected.eof(state.pos);
+    }
+    if (state.ok) {
+      $1 = $2!;
+    } else {
+      final $error = state.error;
+      int? $3;
+      String? $4;
       state.ok = false;
       if (state.pos < source.length) {
         final c = source.codeUnitAt(state.pos);
-        if (c == 0x22 && source.startsWith('""', state.pos)) {
+        if (c == 34 && source.startsWith('""', state.pos)) {
           state.pos += 2;
           state.ok = true;
-          $6 = '""';
+          $4 = '""';
         }
       }
       if (!state.ok && !state.opt) {
         state.error = ErrExpected.tag(state.pos, const Tag('""'));
       }
       if (state.ok) {
-        $4 = 34;
+        $3 = 34;
       }
       if (state.ok) {
-        $1 = $4;
-        break;
+        $1 = $3!;
+      } else if (!state.opt) {
+        state.error = ErrCombined(state.pos, [$error, state.error]);
       }
-      final $5 = state.error;
-      if (!state.opt) {
-        state.error = ErrCombined(state.pos, [$3, $5]);
-      }
-      break;
     }
     if (!state.ok) {
       break;
@@ -175,9 +171,8 @@ String? _string(State<String> state) {
     List<int>? $3;
     $3 = _chars(state);
     if (state.ok) {
-      //
       final v = $3!;
-      $2 = (String.fromCharCodes(v));
+      $2 = String.fromCharCodes(v);
     }
     if (state.ok) {
       bool? $4;
@@ -193,48 +188,37 @@ String? _string(State<String> state) {
   return $0;
 }
 
-@pragma('vm:prefer-inline')
-String? _text(State<String> state) {
+String? _field(State<String> state) {
   final source = state.source;
   String? $0;
-  final $pos = state.pos;
-  //
-  while (state.pos < source.length) {
-    var c = source.codeUnitAt(state.pos);
-    c = c & 0xfc00 != 0xd800 ? c : source.runeAt(state.pos);
-    if (!!(c == 10 || c == 13 || c == 34 || c == 44)) {
-      break;
-    }
-    state.pos += c > 0xffff ? 2 : 1;
-  }
-  state.ok = true;
+  String? $1;
+  $1 = _string(state);
   if (state.ok) {
-    $0 = $pos == state.pos ? '' : source.substring($pos, state.pos);
-  }
-  return $0;
-}
-
-String? _field(State<String> state) {
-  String? $0;
-  for (;;) {
-    String? $1;
-    $1 = _string(state);
+    $0 = $1!;
+  } else {
+    final $error = state.error;
+    String? $2;
+    final $pos = state.pos;
+    while (state.pos < source.length) {
+      var c = source.codeUnitAt(state.pos);
+      if (c > 0xd7ff) {
+        c = source.runeAt(state.pos);
+      }
+      final ok = !(c == 10 || c == 13 || c == 34 || c == 44);
+      if (!ok) {
+        break;
+      }
+      state.pos += c > 0xffff ? 2 : 1;
+    }
+    state.ok = true;
     if (state.ok) {
-      $0 = $1;
-      break;
+      $2 = $pos == state.pos ? '' : source.substring($pos, state.pos);
     }
-    final $2 = state.error;
-    String? $3;
-    $3 = _text(state);
     if (state.ok) {
-      $0 = $3;
-      break;
+      $0 = $2!;
+    } else if (!state.opt) {
+      state.error = ErrCombined(state.pos, [$error, state.error]);
     }
-    final $4 = state.error;
-    if (!state.opt) {
-      state.error = ErrCombined(state.pos, [$2, $4]);
-    }
-    break;
   }
   return $0;
 }
@@ -259,7 +243,7 @@ List<String>? _row(State<String> state) {
     state.ok = false;
     if (state.pos < source.length) {
       final c = source.codeUnitAt(state.pos);
-      if (c == 0x2C) {
+      if (c == 44) {
         state.pos++;
         state.ok = true;
         $2 = ',';
