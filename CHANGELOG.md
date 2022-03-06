@@ -1,3 +1,7 @@
+## 0.1.21
+
+- The parser has become a little faster after rebuilding with new version of `parser_builder`
+
 ## 0.1.20
 
 - The parser has become a little faster after rebuilding with new version of `parser_builder`

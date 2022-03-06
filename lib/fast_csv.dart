@@ -89,13 +89,15 @@ List<int>? _chars(State<String> state) {
     int? $2;
     state.ok = false;
     if (state.pos < source.length) {
+      var size = 1;
       var c = source.codeUnitAt(state.pos);
       if (c > 0xd7ff) {
         c = source.runeAt(state.pos);
+        size = c > 0xffff ? 2 : 1;
       }
       state.ok = c != 34;
       if (state.ok) {
-        state.pos += c > 0xffff ? 2 : 1;
+        state.pos += size;
         $2 = c;
       } else if (!state.opt) {
         state.error = ErrUnexpected.char(state.pos, Char(c));
@@ -200,15 +202,17 @@ String? _field(State<String> state) {
     String? $2;
     final $pos = state.pos;
     while (state.pos < source.length) {
+      var size = 1;
       var c = source.codeUnitAt(state.pos);
       if (c > 0xd7ff) {
         c = source.runeAt(state.pos);
+        size = c > 0xffff ? 2 : 1;
       }
-      final ok = !(c == 10 || c == 13 || c == 34 || c == 44);
+      final ok = !(c < 45 && (c == 10 || c == 13 || c == 34 || c == 44));
       if (!ok) {
         break;
       }
-      state.pos += c > 0xffff ? 2 : 1;
+      state.pos += size;
     }
     state.ok = true;
     if (state.ok) {

@@ -101,13 +101,15 @@ List<int>? _chars(State<String> state) {
     int? $2;
     state.ok = false;
     if (state.pos < source.length) {
+      var size = 1;
       var c = source.codeUnitAt(state.pos);
       if (c > 0xd7ff) {
         c = source.runeAt(state.pos);
+        size = c > 0xffff ? 2 : 1;
       }
       state.ok = c != 34;
       if (state.ok) {
-        state.pos += c > 0xffff ? 2 : 1;
+        state.pos += size;
         $2 = c;
       } else if (!state.opt) {
         state.error = ErrUnexpected.char(state.pos, Char(c));
@@ -213,15 +215,17 @@ String? _field(State<String> state) {
     final $pos = state.pos;
     final $cond = (state.context as _StateContext).notTextChar;
     while (state.pos < source.length) {
+      var size = 1;
       var c = source.codeUnitAt(state.pos);
       if (c > 0xd7ff) {
         c = source.runeAt(state.pos);
+        size = c > 0xffff ? 2 : 1;
       }
       final ok = $cond(c);
       if (!ok) {
         break;
       }
-      state.pos += c > 0xffff ? 2 : 1;
+      state.pos += size;
     }
     state.ok = true;
     if (state.ok) {

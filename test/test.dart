@@ -37,63 +37,63 @@ void _test() {
     }
     {
       const s = '''
-123,"abc"
-456,def
+123,"abc😄"
+456,def😄
 ''';
       final r = _fast_csv.parse(s);
       expect(r, [
-        ['123', 'abc'],
-        ['456', 'def']
+        ['123', 'abc😄'],
+        ['456', 'def😄']
       ]);
     }
     {
       const s = '''
-123,"""abc"""
-456,def
+123,"""abc😄"""
+456,def😄
 ''';
       final r = _fast_csv.parse(s);
       expect(r, [
-        ['123', '"abc"'],
-        ['456', 'def']
+        ['123', '"abc😄"'],
+        ['456', 'def😄']
       ]);
     }
     {
       const s = '''
-123,"ab""c"""
-456,def
+123,"ab""c😄"""
+456,def😄
 ''';
       final r = _fast_csv.parse(s);
       expect(r, [
-        ['123', 'ab"c"'],
-        ['456', 'def']
+        ['123', 'ab"c😄"'],
+        ['456', 'def😄']
       ]);
     }
     {
       const s = '''
-123,abc,1
-456,def,
+123,abc😄,1
+456,def😄,
 ''';
       final r = _fast_csv.parse(s);
       expect(r, [
-        ['123', 'abc', '1'],
-        ['456', 'def', '']
+        ['123', 'abc😄', '1'],
+        ['456', 'def😄', '']
       ]);
     }
     {
       const s = '''
 123,"multi
 line",1
-456,def,
+456,def😄,
 ''';
       final r = _fast_csv.parse(s);
       expect(r, [
         ['123', 'multi\nline', '1'],
-        ['456', 'def', '']
+        ['456', 'def😄', '']
       ]);
     }
     {
       const s = '''
-123,abc
+123,abc😄
 456,"multi
 line"
 
@@ -103,7 +103,7 @@ line"
 ''';
       final r = _fast_csv.parse(s);
       expect(r, [
-        ['123', 'abc'],
+        ['123', 'abc😄'],
         ['456', 'multi\nline'],
         [''],
         ['# Comment'],
