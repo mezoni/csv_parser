@@ -22,10 +22,8 @@ List<List<String>> parse(String source, {String separator = ','}) {
   check('separator', separator);
   final state = State(source);
   final separatorChar = separator.runes.first;
-  state.context = _StateContext(
-      notTextChar: (int x) =>
-          !(x == 0xA || x == 0xD || x == 0x22 || x == separatorChar),
-      separator: separator);
+  state.context =
+      _StateContext(separator: separator, separatorChar: separatorChar);
   final result = _parse(state);
   if (!state.ok) {
     final errors = Err.errorReport(state.error);
@@ -101,18 +99,19 @@ List<int>? _chars(State<String> state) {
     int? $2;
     state.ok = false;
     if (state.pos < source.length) {
-      var size = 1;
-      var c = source.codeUnitAt(state.pos);
+      final pos = state.pos;
+      var c = source.codeUnitAt(state.pos++);
       if (c > 0xd7ff) {
-        c = source.runeAt(state.pos);
-        size = c > 0xffff ? 2 : 1;
+        c = source.decodeW2(state, c);
       }
       state.ok = c != 34;
       if (state.ok) {
-        state.pos += size;
         $2 = c;
-      } else if (!state.opt) {
-        state.error = ErrUnexpected.char(state.pos, Char(c));
+      } else {
+        state.pos = pos;
+        if (!state.opt) {
+          state.error = ErrUnexpected.char(state.pos, Char(c));
+        }
       }
     } else if (!state.opt) {
       state.error = ErrUnexpected.eof(state.pos);
@@ -213,19 +212,18 @@ String? _field(State<String> state) {
     final $error = state.error;
     String? $2;
     final $pos = state.pos;
-    final $cond = (state.context as _StateContext).notTextChar;
+    final $cond = (state.context as _StateContext).separatorChar;
     while (state.pos < source.length) {
-      var size = 1;
-      var c = source.codeUnitAt(state.pos);
+      final pos = state.pos;
+      var c = source.codeUnitAt(state.pos++);
       if (c > 0xd7ff) {
-        c = source.runeAt(state.pos);
-        size = c > 0xffff ? 2 : 1;
+        c = source.decodeW2(state, c);
       }
-      final ok = $cond(c);
+      final ok = !(c == 0xA || c == 0xD || c == 0x22 || c == $cond);
       if (!ok) {
+        state.pos = pos;
         break;
       }
-      state.pos += size;
     }
     state.ok = true;
     if (state.ok) {
@@ -808,6 +806,24 @@ class Tag {
 extension on String {
   @pragma('vm:prefer-inline')
   // ignore: unused_element
+  int decodeW2(State<String> state, int w1) {
+    if (w1 < 0xe000) {
+      if (state.pos < length) {
+        final w2 = codeUnitAt(state.pos++);
+        if ((w2 & 0xfc00) == 0xdc00) {
+          return 0x10000 + ((w1 & 0x3ff) << 10) + (w2 & 0x3ff);
+        }
+
+        state.pos--;
+      }
+
+      throw FormatException('Invalid UTF-16 character', this, state.pos - 1);
+    }
+    return w1;
+  }
+
+  @pragma('vm:prefer-inline')
+  // ignore: unused_element
   int runeAt(int index) {
     final c1 = codeUnitAt(index++);
     if ((c1 & 0xfc00) == 0xd800 && index < length) {
@@ -846,9 +862,9 @@ extension on String {
 }
 
 class _StateContext {
-  final bool Function(int) notTextChar;
-
   final String separator;
 
-  _StateContext({required this.notTextChar, required this.separator});
+  final int separatorChar;
+
+  _StateContext({required this.separator, required this.separatorChar});
 }

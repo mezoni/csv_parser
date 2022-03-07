@@ -18,11 +18,11 @@ void main(List<String> args) async {
 
 const __footer = '''
 class _StateContext {
-  final bool Function(int) notTextChar;
-
   final String separator;
 
-  _StateContext({required this.notTextChar, required this.separator});
+  final int separatorChar;
+
+  _StateContext({required this.separator, required this.separatorChar});
 }
 ''';
 
@@ -52,8 +52,8 @@ List<List<String>> parse(String source, {String separator = ','}) {
   final state = State(source);
   final separatorChar = separator.runes.first;
   state.context = _StateContext(
-      notTextChar: (int x) => !(x == 0xA || x == 0xD || x == 0x22 || x == separatorChar),
-      separator: separator);
+      separator: separator,
+      separatorChar: separatorChar);
   final result = _parse(state);
   if (!state.ok) {
     final errors = Err.errorReport(state.error);
@@ -81,9 +81,6 @@ const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt([_string, _text]));
 
-const _notTextChar = ClosureTransformer<int, bool>(
-    '(state.context as _StateContext).notTextChar');
-
 const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
 const _parse = Named('_parse', Terminated(_rows, _eof));
@@ -98,14 +95,35 @@ const _rows =
     Named('_rows', Terminated(SeparatedList1(_row, _rowEnding), Opt(_eol)));
 
 const _separator = Named('_separator',
-    TagEx(VarTransformer(' (state.context as _StateContext).separator')));
+    TagEx(VarTransformer('(state.context as _StateContext).separator')));
 
 const _string = Named(
     '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
 
-const _text = TakeWhile(_notTextChar);
+const _text = TakeWhile(_IsSeparator());
 
 const _toString =
     ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');
 
 const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));
+
+class _IsSeparator extends Transformer<int, bool> {
+  static const _template = '''
+final {{name}} = (state.context as _StateContext).separatorChar;''';
+
+  const _IsSeparator();
+
+  @override
+  String declare(Context context, String name) {
+    return _template.replaceAll('{{name}}', name);
+  }
+
+  @override
+  String invoke(Context context, String name, String value) {
+    var t =
+        '!({{x}} == 0xA || {{x}} == 0xD || {{x}} == 0x22 || {{x}} == {{name}})';
+    t = t.replaceAll('{{x}}', value);
+    t = t.replaceAll('{{name}}', name);
+    return t;
+  }
+}

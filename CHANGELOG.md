@@ -1,3 +1,8 @@
+## 0.1.22
+
+- The parser has become a little faster after rebuilding with new version of `parser_builder`
+- Configurable parser has become faster after adding new features to `parser_builder` to create efficient configurable parsers. Now the `fast_csv_ex` parser has become about 15% faster. Now it about 15% slower than the non-configurable parser (before that the difference was 30%). Not much, but it's always beneficial
+
 ## 0.1.21
 
 - The parser has become a little faster after rebuilding with new version of `parser_builder`
