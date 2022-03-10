@@ -73,11 +73,14 @@ const _rows =
     Named('_rows', Terminated(SeparatedList1(_row, _rowEnding), Opt(_eol)));
 
 const _string = Named(
-    '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
+    '_string',
+    Map3(
+        _openQuote,
+        _chars,
+        _closeQuote,
+        ExprTransformer<String>(
+            ['o', 'v', 'c'], 'String.fromCharCodes({{v}})')));
 
 const _text = TakeWhile(NotCharClass('[,"] | #xA | #xD'));
-
-const _toString =
-    ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');
 
 const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));

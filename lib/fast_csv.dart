@@ -31,10 +31,11 @@ bool? _ws(State<String> state) {
   while (state.pos < source.length) {
     final c = source.codeUnitAt(state.pos);
     final ok = c == 9 || c == 32;
-    if (!ok) {
-      break;
+    if (ok) {
+      state.pos++;
+      continue;
     }
-    state.pos++;
+    break;
   }
   if (state.ok) {
     $0 = true;
@@ -45,16 +46,11 @@ bool? _ws(State<String> state) {
 String? _quote(State<String> state) {
   final source = state.source;
   String? $0;
-  state.ok = false;
-  if (state.pos < source.length) {
-    final c = source.codeUnitAt(state.pos);
-    if (c == 34) {
-      state.pos++;
-      state.ok = true;
-      $0 = '"';
-    }
-  }
-  if (!state.ok && !state.opt) {
+  state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 34;
+  if (state.ok) {
+    state.pos++;
+    $0 = '"';
+  } else if (state.log) {
     state.error = ErrExpected.tag(state.pos, const Tag('"'));
   }
   return $0;
@@ -81,8 +77,8 @@ bool? _openQuote(State<String> state) {
 List<int>? _chars(State<String> state) {
   final source = state.source;
   List<int>? $0;
-  final $opt = state.opt;
-  state.opt = true;
+  final $log = state.log;
+  state.log = false;
   final $list = <int>[];
   for (;;) {
     int? $1;
@@ -90,20 +86,17 @@ List<int>? _chars(State<String> state) {
     state.ok = false;
     if (state.pos < source.length) {
       final pos = state.pos;
-      var c = source.codeUnitAt(state.pos++);
-      if (c > 0xd7ff) {
-        c = source.decodeW2(state, c);
-      }
+      var c = source.readRune(state);
       state.ok = c != 34;
       if (state.ok) {
         $2 = c;
       } else {
         state.pos = pos;
-        if (!state.opt) {
+        if (state.log) {
           state.error = ErrUnexpected.char(state.pos, Char(c));
         }
       }
-    } else if (!state.opt) {
+    } else if (state.log) {
       state.error = ErrUnexpected.eof(state.pos);
     }
     if (state.ok) {
@@ -112,16 +105,13 @@ List<int>? _chars(State<String> state) {
       final $error = state.error;
       int? $3;
       String? $4;
-      state.ok = false;
-      if (state.pos < source.length) {
-        final c = source.codeUnitAt(state.pos);
-        if (c == 34 && source.startsWith('""', state.pos)) {
-          state.pos += 2;
-          state.ok = true;
-          $4 = '""';
-        }
-      }
-      if (!state.ok && !state.opt) {
+      state.ok = state.pos < source.length &&
+          source.codeUnitAt(state.pos) == 34 &&
+          source.startsWith('""', state.pos);
+      if (state.ok) {
+        state.pos += 2;
+        $4 = '""';
+      } else if (state.log) {
         state.error = ErrExpected.tag(state.pos, const Tag('""'));
       }
       if (state.ok) {
@@ -129,7 +119,7 @@ List<int>? _chars(State<String> state) {
       }
       if (state.ok) {
         $1 = $3!;
-      } else if (!state.opt) {
+      } else if (state.log) {
         state.error = ErrCombined(state.pos, [$error, state.error]);
       }
     }
@@ -142,7 +132,7 @@ List<int>? _chars(State<String> state) {
   if (state.ok) {
     $0 = $list;
   }
-  state.opt = $opt;
+  state.log = $log;
   return $0;
 }
 
@@ -170,18 +160,13 @@ String? _string(State<String> state) {
   bool? $1;
   $1 = _openQuote(state);
   if (state.ok) {
-    String? $2;
-    List<int>? $3;
-    $3 = _chars(state);
+    List<int>? $2;
+    $2 = _chars(state);
     if (state.ok) {
-      final v = $3!;
-      $2 = String.fromCharCodes(v);
-    }
-    if (state.ok) {
-      bool? $4;
-      $4 = _closeQuote(state);
+      bool? $3;
+      $3 = _closeQuote(state);
       if (state.ok) {
-        $0 = $2!;
+        $0 = String.fromCharCodes($2!);
       }
     }
   }
@@ -204,15 +189,13 @@ String? _field(State<String> state) {
     final $pos = state.pos;
     while (state.pos < source.length) {
       final pos = state.pos;
-      var c = source.codeUnitAt(state.pos++);
-      if (c > 0xd7ff) {
-        c = source.decodeW2(state, c);
+      var c = source.readRune(state);
+      final ok = c > 44 || c != 10 && c != 13 && c != 34 && c != 44;
+      if (ok) {
+        continue;
       }
-      final ok = !(c < 45 && (c == 10 || c == 13 || c == 34 || c == 44));
-      if (!ok) {
-        state.pos = pos;
-        break;
-      }
+      state.pos = pos;
+      break;
     }
     state.ok = true;
     if (state.ok) {
@@ -220,7 +203,7 @@ String? _field(State<String> state) {
     }
     if (state.ok) {
       $0 = $2!;
-    } else if (!state.opt) {
+    } else if (state.log) {
       state.error = ErrCombined(state.pos, [$error, state.error]);
     }
   }
@@ -230,11 +213,11 @@ String? _field(State<String> state) {
 List<String>? _row(State<String> state) {
   final source = state.source;
   List<String>? $0;
-  final $opt = state.opt;
+  final $log = state.log;
   var $pos = state.pos;
   final $list = <String>[];
   for (;;) {
-    state.opt = $list.isNotEmpty;
+    state.log = $list.isEmpty;
     String? $1;
     $1 = _field(state);
     if (!state.ok) {
@@ -244,16 +227,11 @@ List<String>? _row(State<String> state) {
     $list.add($1!);
     $pos = state.pos;
     String? $2;
-    state.ok = false;
-    if (state.pos < source.length) {
-      final c = source.codeUnitAt(state.pos);
-      if (c == 44) {
-        state.pos++;
-        state.ok = true;
-        $2 = ',';
-      }
-    }
-    if (!state.ok && !state.opt) {
+    state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 44;
+    if (state.ok) {
+      state.pos++;
+      $2 = ',';
+    } else if (state.log) {
       state.error = ErrExpected.tag(state.pos, const Tag(','));
     }
     if (!state.ok) {
@@ -264,34 +242,37 @@ List<String>? _row(State<String> state) {
     state.ok = true;
     $0 = $list;
   }
-  state.opt = $opt;
+  state.log = $log;
   return $0;
 }
 
 String? _eol(State<String> state) {
   final source = state.source;
   String? $0;
+  state.ok = false;
   final $pos = state.pos;
   if (state.pos < source.length) {
     final c = source.codeUnitAt($pos);
     switch (c) {
       case 10:
         state.pos++;
+        state.ok = true;
         $0 = '\n';
         break;
       case 13:
         if (source.startsWith('\r\n', $pos)) {
           state.pos += 2;
+          state.ok = true;
           $0 = '\r\n';
           break;
         }
         state.pos++;
+        state.ok = true;
         $0 = '\r';
         break;
     }
   }
-  state.ok = $0 != null;
-  if (!state.ok && !state.opt) {
+  if (!state.ok && state.log) {
     state.error = ErrCombined($pos, [
       ErrExpected.tag(state.pos, Tag('\n')),
       ErrExpected.tag(state.pos, Tag('\r\n')),
@@ -306,7 +287,7 @@ bool? _eof(State<String> state) {
   state.ok = state.pos >= state.source.length;
   if (state.ok) {
     $0 = true;
-  } else if (!state.opt) {
+  } else if (state.log) {
     state.error = ErrExpected.eof(state.pos);
   }
   return $0;
@@ -319,8 +300,8 @@ bool? _rowEnding(State<String> state) {
   $1 = _eol(state);
   if (state.ok) {
     bool? $2;
-    final $opt = state.opt;
-    state.opt = true;
+    final $log = state.log;
+    state.log = false;
     final $pos1 = state.pos;
     bool? $3;
     $3 = _eof(state);
@@ -329,11 +310,11 @@ bool? _rowEnding(State<String> state) {
       $2 = true;
     } else {
       state.pos = $pos1;
-      if (!$opt) {
+      if ($log) {
         state.error = ErrUnknown(state.pos);
       }
     }
-    state.opt = $opt;
+    state.log = $log;
     if (state.ok) {
       $0 = true;
     }
@@ -348,11 +329,11 @@ List<List<String>>? _rows(State<String> state) {
   List<List<String>>? $0;
   final $pos = state.pos;
   List<List<String>>? $1;
-  final $opt = state.opt;
+  final $log = state.log;
   var $pos1 = state.pos;
   final $list = <List<String>>[];
   for (;;) {
-    state.opt = $list.isNotEmpty;
+    state.log = $list.isEmpty;
     List<String>? $2;
     $2 = _row(state);
     if (!state.ok) {
@@ -371,11 +352,11 @@ List<List<String>>? _rows(State<String> state) {
     state.ok = true;
     $1 = $list;
   }
-  state.opt = $opt;
+  state.log = $log;
   if (state.ok) {
     dynamic $4;
-    final $opt1 = state.opt;
-    state.opt = true;
+    final $log1 = state.log;
+    state.log = false;
     String? $5;
     $5 = _eol(state);
     if (state.ok) {
@@ -384,7 +365,7 @@ List<List<String>>? _rows(State<String> state) {
       state.ok = true;
       $4 = null;
     }
-    state.opt = $opt1;
+    state.log = $log1;
     if (state.ok) {
       $0 = $1!;
     }
@@ -685,6 +666,12 @@ class ErrUnexpected extends Err {
       : length = 1,
         value = value;
 
+  ErrUnexpected.charOrEof(this.offset, String source, [int? c])
+      : length = 1,
+        value = offset < source.length
+            ? Char(c ?? source.runeAt(offset))
+            : const Tag('EOF');
+
   ErrUnexpected.eof(this.offset)
       : length = 1,
         value = const Tag('EOF');
@@ -740,9 +727,9 @@ class State<T> {
 
   Err error = ErrUnknown(0);
 
-  bool ok = false;
+  bool log = true;
 
-  bool opt = false;
+  bool ok = false;
 
   int pos = 0;
 
@@ -792,8 +779,9 @@ class Tag {
 extension on String {
   @pragma('vm:prefer-inline')
   // ignore: unused_element
-  int decodeW2(State<String> state, int w1) {
-    if (w1 < 0xe000) {
+  int readRune(State<String> state) {
+    final w1 = codeUnitAt(state.pos++);
+    if (w1 > 0xd7ff && w1 < 0xe000) {
       if (state.pos < length) {
         final w2 = codeUnitAt(state.pos++);
         if ((w2 & 0xfc00) == 0xdc00) {
@@ -805,20 +793,26 @@ extension on String {
 
       throw FormatException('Invalid UTF-16 character', this, state.pos - 1);
     }
+
     return w1;
   }
 
   @pragma('vm:prefer-inline')
   // ignore: unused_element
   int runeAt(int index) {
-    final c1 = codeUnitAt(index++);
-    if ((c1 & 0xfc00) == 0xd800 && index < length) {
-      final c2 = codeUnitAt(index);
-      if ((c2 & 0xfc00) == 0xdc00) {
-        return 0x10000 + ((c1 & 0x3ff) << 10) + (c2 & 0x3ff);
+    final w1 = codeUnitAt(index++);
+    if (w1 > 0xd7ff && w1 < 0xe000) {
+      if (index < length) {
+        final w2 = codeUnitAt(index);
+        if ((w2 & 0xfc00) == 0xdc00) {
+          return 0x10000 + ((w1 & 0x3ff) << 10) + (w2 & 0x3ff);
+        }
       }
+
+      throw FormatException('Invalid UTF-16 character', this, index - 1);
     }
-    return c1;
+
+    return w1;
   }
 
   /// Returns a slice (substring) of the string from [start] to [end].

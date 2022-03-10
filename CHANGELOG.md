@@ -1,3 +1,15 @@
+## 0.1.25
+
+- The parsers has been rebuilt using the new version of `parser_builder`
+
+## 0.1.24
+
+- The parser has become a little faster after rebuilding with new version of `parser_builder`
+
+## 0.1.23
+
+- The parser definition (grammar ) has been slightly modified to match the changes introduced in `parser_builder`
+
 ## 0.1.22
 
 - The parser has become a little faster after rebuilding with new version of `parser_builder`

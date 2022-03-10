@@ -98,32 +98,37 @@ const _separator = Named('_separator',
     TagEx(VarTransformer('(state.context as _StateContext).separator')));
 
 const _string = Named(
-    '_string', Delimited(_openQuote, Map$(_chars, _toString), _closeQuote));
+    '_string',
+    Map3(
+        _openQuote,
+        _chars,
+        _closeQuote,
+        ExprTransformer<String>(
+            ['o', 'v', 'c'], 'String.fromCharCodes({{v}})')));
 
 const _text = TakeWhile(_IsSeparator());
 
-const _toString =
-    ExprTransformer<List<int>, String>('x', 'String.fromCharCodes({{x}})');
-
 const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));
 
-class _IsSeparator extends Transformer<int, bool> {
-  static const _template = '''
-final {{name}} = (state.context as _StateContext).separatorChar;''';
-
-  const _IsSeparator();
+class _IsSeparator extends ExprTransformer<bool> {
+  const _IsSeparator()
+      : super(const [
+          'x'
+        ], '{{x}} != 0xA && {{x}} != 0xD && {{x}} != 0x22 && {{x}} != {{name}}');
 
   @override
-  String declare(Context context, String name) {
-    return _template.replaceAll('{{name}}', name);
+  String declare(Transformation transformation) {
+    transformation.checkArguments(parameters);
+    final name = transformation.name;
+    final result =
+        'final {{name}} = (state.context as _StateContext).separatorChar;';
+    return result.replaceAll('{{name}}', name);
   }
 
   @override
-  String invoke(Context context, String name, String value) {
-    var t =
-        '!({{x}} == 0xA || {{x}} == 0xD || {{x}} == 0x22 || {{x}} == {{name}})';
-    t = t.replaceAll('{{x}}', value);
-    t = t.replaceAll('{{name}}', name);
-    return t;
+  String invoke(Transformation transformation) {
+    var result = super.invoke(transformation);
+    final name = transformation.name;
+    return result.replaceAll('{{name}}', name);
   }
 }
