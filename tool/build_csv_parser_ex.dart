@@ -68,10 +68,10 @@ List<List<String>> parse(String source, {String separator = ','}) {
 
 const _chars = Named(
     '_chars',
-    Many0(Alt([
+    Many0(Alt2(
       NoneOf([0x22]),
       Value(0x22, Tag('""')),
-    ])));
+    )));
 
 const _closeQuote = Named('_closeQuote', Sequence<String>([_quote, _ws]));
 
@@ -79,7 +79,7 @@ const _eof = Named('_eof', Eof<String>());
 
 const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
-const _field = Named('_field', Alt([_string, _text]));
+const _field = Named('_field', Alt2(_string, _text));
 
 const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
@@ -94,8 +94,10 @@ const _rowEnding = Named('_rowEnding', Sequence<String>([_eol, Not(_eof)]));
 const _rows =
     Named('_rows', Terminated(SeparatedList1(_row, _rowEnding), Opt(_eol)));
 
-const _separator = Named('_separator',
-    TagEx(VarTransformer('(state.context as _StateContext).separator')));
+const _separator = Named(
+    '_separator',
+    TagEx(VarTransformer([], '{{sep}}',
+        key: 'sep', init: '(state.context as _StateContext).separator')));
 
 const _string = Named(
     '_string',
@@ -106,29 +108,10 @@ const _string = Named(
         ExprTransformer<String>(
             ['o', 'v', 'c'], 'String.fromCharCodes({{v}})')));
 
-const _text = TakeWhile(_IsSeparator());
+const _text = TakeWhile(_isSeparator);
 
 const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));
 
-class _IsSeparator extends ExprTransformer<bool> {
-  const _IsSeparator()
-      : super(const [
-          'x'
-        ], '{{x}} != 0xA && {{x}} != 0xD && {{x}} != 0x22 && {{x}} != {{name}}');
-
-  @override
-  String declare(Transformation transformation) {
-    transformation.checkArguments(parameters);
-    final name = transformation.name;
-    final result =
-        'final {{name}} = (state.context as _StateContext).separatorChar;';
-    return result.replaceAll('{{name}}', name);
-  }
-
-  @override
-  String invoke(Transformation transformation) {
-    var result = super.invoke(transformation);
-    final name = transformation.name;
-    return result.replaceAll('{{name}}', name);
-  }
-}
+const _isSeparator = VarTransformer<bool>(
+    ['c'], '{{c}} != 0xA && {{c}} != 0xD && {{c}} != 0x22 && {{c}} != {{sep}}',
+    key: 'sep', init: '(state.context as _StateContext).separatorChar');

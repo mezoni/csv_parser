@@ -27,7 +27,6 @@ List<List<String>> parse(String source) {
 bool? _ws(State<String> state) {
   final source = state.source;
   bool? $0;
-  state.ok = true;
   while (state.pos < source.length) {
     final c = source.codeUnitAt(state.pos);
     final ok = c == 9 || c == 32;
@@ -37,6 +36,7 @@ bool? _ws(State<String> state) {
     }
     break;
   }
+  state.ok = true;
   if (state.ok) {
     $0 = true;
   }
@@ -105,9 +105,9 @@ List<int>? _chars(State<String> state) {
       final $error = state.error;
       int? $3;
       String? $4;
-      state.ok = state.pos < source.length &&
+      state.ok = state.pos + 1 < source.length &&
           source.codeUnitAt(state.pos) == 34 &&
-          source.startsWith('""', state.pos);
+          source.codeUnitAt(state.pos + 1) == 34;
       if (state.ok) {
         state.pos += 2;
         $4 = '""';
@@ -217,7 +217,7 @@ List<String>? _row(State<String> state) {
   var $pos = state.pos;
   final $list = <String>[];
   for (;;) {
-    state.log = $list.isEmpty;
+    state.log = $list.isEmpty ? $log : false;
     String? $1;
     $1 = _field(state);
     if (!state.ok) {
@@ -333,7 +333,7 @@ List<List<String>>? _rows(State<String> state) {
   var $pos1 = state.pos;
   final $list = <List<String>>[];
   for (;;) {
-    state.log = $list.isEmpty;
+    state.log = $list.isEmpty ? $log : false;
     List<String>? $2;
     $2 = _row(state);
     if (!state.ok) {
@@ -665,6 +665,10 @@ class ErrUnexpected extends Err {
   ErrUnexpected.char(this.offset, Char value)
       : length = 1,
         value = value;
+
+  ErrUnexpected.charAt(this.offset, String source)
+      : length = 1,
+        value = Char(source.runeAt(offset));
 
   ErrUnexpected.charOrEof(this.offset, String source, [int? c])
       : length = 1,

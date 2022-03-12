@@ -46,10 +46,10 @@ List<List<String>> parse(String source) {
 
 const _chars = Named(
     '_chars',
-    Many0(Alt([
+    Many0(Alt2(
       NoneOf([0x22]),
       Value(0x22, Tag('""')),
-    ])));
+    )));
 
 const _closeQuote = Named('_closeQuote', Sequence<String>([_quote, _ws]));
 
@@ -57,7 +57,7 @@ const _eof = Named('_eof', Eof<String>());
 
 const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
-const _field = Named('_field', Alt([_string, _text]));
+const _field = Named('_field', Alt2(_string, _text));
 
 const _openQuote = Named('_openQuote', Sequence<String>([_ws, _quote]));
 
