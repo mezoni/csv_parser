@@ -1,3 +1,7 @@
+## 0.1.27
+
+- The parsers has been rebuilt using the new version of `parser_builder` following improvements to parser error reporting procedures in `parser_builder`
+
 ## 0.1.26
 
 - The parser has become a little faster after rebuilding with new version of `parser_builder`
