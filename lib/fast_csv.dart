@@ -274,9 +274,9 @@ String? _eol(State<String> state) {
   }
   if (!state.ok && state.log) {
     state.error = ErrCombined($pos, [
-      ErrExpected.tag(state.pos, Tag('\n')),
-      ErrExpected.tag(state.pos, Tag('\r\n')),
-      ErrExpected.tag(state.pos, Tag('\r'))
+      ErrExpected.tag(state.pos, const Tag('\n')),
+      ErrExpected.tag(state.pos, const Tag('\r\n')),
+      ErrExpected.tag(state.pos, const Tag('\r'))
     ]);
   }
   return $0;
@@ -446,6 +446,8 @@ class Char {
 }
 
 abstract class Err {
+  int _furthest = 0;
+
   @override
   int get hashCode => length.hashCode ^ offset.hashCode;
 
@@ -469,28 +471,22 @@ abstract class Err {
       for (final error in error.errors) {
         _flatten(error, result);
       }
-    } else if (error is ErrWithTagAndErrors) {
+    } else if (error is ErrNested) {
       final inner = <Err>[];
-      for (final nested in error.errors) {
-        _flatten(nested, inner);
+      for (final error in error.errors) {
+        _flatten(error, inner);
       }
 
-      final farthest = inner.map((e) => e.offset).reduce(_max);
-      inner.removeWhere((e) => e.offset < farthest);
+      final furthest =
+          inner.map((e) => _max(e.offset, e._furthest)).reduce(_max);
+      inner.removeWhere((e) => _max(e.offset, e._furthest) < furthest);
+      final maxEnd = inner.map((e) => e.offset + e.length).reduce(_max);
       final offset = error.offset;
-      final tag = error.tag;
-      result.add(ErrExpected.tag(offset, tag));
-      if (farthest > offset) {
-        if (error is ErrMalformed) {
-          result.add(_ErrInner(farthest, offset, 'Malformed $tag'));
-          result.addAll(inner);
-        } else if (error is ErrNested) {
-          if (farthest > offset) {
-            result.addAll(inner);
-          }
-        } else {
-          throw StateError('Internal error');
-        }
+      result.add(ErrExpected.tag(offset, error.tag).._furthest = furthest);
+      if (furthest > offset) {
+        result.add(ErrMessage(offset, maxEnd - offset, error.message)
+          .._furthest = furthest);
+        result.addAll(inner);
       }
     } else {
       result.add(error);
@@ -504,35 +500,38 @@ abstract class Err {
     return y > x ? y : x;
   }
 
-  static List<Err> _postprocess(List<Err> errors) {
-    var result = errors.toList();
-    final farthest =
-        result.isEmpty ? -1 : result.map((e) => e.offset).reduce(_max);
-    result.removeWhere((e) => e.offset < farthest);
-    final expected =
-        result.whereType<ErrExpected>().map((e) => '${e.value}').toList();
-    if (expected.isNotEmpty) {
-      expected.sort();
-      result.removeWhere((e) => e is ErrExpected);
-      result.add(ErrMessage(farthest, 1, 'Expected: ${expected.join(', ')}'));
-    }
-
-    for (var i = 0; i < result.length; i++) {
-      final error = result[i];
-      if (error is _ErrInner) {
-        final length = error.offset;
-        error.offset = error.length;
-        error.length = length;
-      }
-    }
-
-    return result;
-  }
-
   static List<Err> _preprocess(Err error) {
     final result = <Err>[];
     _flatten(error, result);
     return result.toSet().toList();
+  }
+
+  static List<Err> _postprocess(List<Err> errors) {
+    final result = errors.toList();
+    final furthest = result.isEmpty
+        ? -1
+        : result.map((e) => _max(e.offset, e._furthest)).reduce(_max);
+    result.removeWhere((e) => _max(e.offset, e._furthest) < furthest);
+    final map = <int, List<ErrExpected>>{};
+    for (final error in result.whereType<ErrExpected>()) {
+      final offset = error.offset;
+      var list = map[offset];
+      if (list == null) {
+        list = [];
+        map[offset] = list;
+      }
+
+      list.add(error);
+    }
+
+    result.removeWhere((e) => e is ErrExpected);
+    for (var offset in map.keys) {
+      final list = map[offset]!;
+      final values = list.map((e) => e.value).join(', ');
+      result.add(ErrMessage(offset, 0, 'Expected: $values'));
+    }
+
+    return result;
   }
 }
 
@@ -575,7 +574,7 @@ class ErrExpected extends Err {
   int get hashCode => super.hashCode ^ value.hashCode;
 
   @override
-  int get length => 1;
+  int get length => 0;
 
   @override
   bool operator ==(other) {
@@ -585,34 +584,6 @@ class ErrExpected extends Err {
   @override
   String toString() {
     final result = 'Expected: $value';
-    return result;
-  }
-}
-
-class ErrMalformed extends ErrWithTagAndErrors {
-  @override
-  final List<Err> errors;
-
-  @override
-  final int offset;
-
-  @override
-  final Tag tag;
-
-  ErrMalformed(this.offset, this.tag, this.errors);
-
-  @override
-  int get length => 1;
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrMalformed;
-  }
-
-  @override
-  String toString() {
-    final result = 'Malformed $tag';
     return result;
   }
 }
@@ -642,31 +613,34 @@ class ErrMessage extends Err {
   }
 }
 
-class ErrNested extends ErrWithTagAndErrors {
+class ErrNested extends ErrWithErrors {
   @override
   final List<Err> errors;
+
+  final String message;
 
   @override
   final int offset;
 
-  @override
   final Tag tag;
 
-  ErrNested(this.offset, this.tag, this.errors);
+  ErrNested(this.offset, this.message, this.tag, this.errors);
 
   @override
-  int get length => 1;
+  int get length => 0;
 
   @override
   // ignore: hash_and_equals
   bool operator ==(other) {
-    return super == other && other is ErrNested;
+    return super == other &&
+        other is ErrNested &&
+        other.message == message &&
+        other.tag == tag;
   }
 
   @override
   String toString() {
-    final result = 'Nested $tag';
-    return result;
+    return message;
   }
 }
 
@@ -690,13 +664,13 @@ class ErrUnexpected extends Err {
         value = Char(source.runeAt(offset));
 
   ErrUnexpected.charOrEof(this.offset, String source, [int? c])
-      : length = 1,
+      : length = offset < source.length ? 1 : 0,
         value = offset < source.length
             ? Char(c ?? source.runeAt(offset))
             : const Tag('EOF');
 
   ErrUnexpected.eof(this.offset)
-      : length = 1,
+      : length = 0,
         value = const Tag('EOF');
 
   ErrUnexpected.label(this.offset, String value)
@@ -729,7 +703,7 @@ class ErrUnknown extends Err {
   ErrUnknown(this.offset);
 
   @override
-  int get length => 1;
+  int get length => 0;
 
   @override
   // ignore: hash_and_equals
@@ -787,16 +761,6 @@ abstract class ErrWithErrors extends Err {
   }
 }
 
-abstract class ErrWithTagAndErrors extends ErrWithErrors {
-  Tag get tag;
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is ErrWithTagAndErrors && other.tag == tag;
-  }
-}
-
 class State<T> {
   dynamic context;
 
@@ -848,29 +812,6 @@ class Tag {
   String toString() {
     final s = name._escape();
     return '\'$s\'';
-  }
-}
-
-class _ErrInner extends Err {
-  @override
-  int length;
-
-  String message;
-
-  @override
-  int offset;
-
-  _ErrInner(this.offset, this.length, this.message);
-
-  @override
-  // ignore: hash_and_equals
-  bool operator ==(other) {
-    return super == other && other is _ErrInner && other.message == message;
-  }
-
-  @override
-  String toString() {
-    return message;
   }
 }
 
