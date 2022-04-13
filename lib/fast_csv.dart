@@ -27,15 +27,17 @@ List<List<String>> parse(String source) {
 void _ws(State<String> state) {
   final source = state.source;
   while (true) {
+    final $pos = state.pos;
     int? $c;
+    int? $2;
     state.ok = state.pos < source.length;
     if (state.ok) {
-      $c = source.codeUnitAt(state.pos);
+      $2 = source.codeUnitAt(state.pos++) as int?;
+      $c = $2!;
       state.ok = $c == 9 || $c == 32;
     }
-    if (state.ok) {
-      state.pos++;
-    } else {
+    if (!state.ok) {
+      state.pos = $pos;
       break;
     }
   }
@@ -49,8 +51,6 @@ String? _quote(State<String> state) {
   if (state.ok) {
     state.pos += 1;
     $0 = '"' as String?;
-  } else {
-    state.error = ErrExpected.tag(state.pos, const Tag('"'));
   }
   return $0;
 }
@@ -58,11 +58,9 @@ String? _quote(State<String> state) {
 void _openQuote(State<String> state) {
   final $pos = state.pos;
   _ws(state);
-  if (state.ok) {
-    _quote(state);
-    if (!state.ok) {
-      state.pos = $pos;
-    }
+  _quote(state);
+  if (!state.ok) {
+    state.pos = $pos;
   }
 }
 
@@ -72,32 +70,33 @@ List<int>? _chars(State<String> state) {
   final $list = <int>[];
   while (true) {
     int? $1;
-    int? $2;
     final $pos = state.pos;
     int? $c;
+    int? $2;
     state.ok = state.pos < source.length;
     if (state.ok) {
-      $c = source.readRune(state);
+      $2 = source.readRune(state) as int?;
+      $c = ($2 as int?)!;
       state.ok = $c != 34;
+      if (state.ok) {
+        $1 = $2;
+      }
     }
-    if (state.ok) {
-      $2 = $c as int?;
-      $1 = $2;
-    } else {
+    if (!state.ok) {
       state.pos = $pos;
-      int? $3;
       state.ok = state.pos + 1 < source.length &&
           source.codeUnitAt(state.pos) == 34 &&
           source.codeUnitAt(state.pos + 1) == 34;
       if (state.ok) {
         state.pos += 2;
-        $3 = 34 as int?;
-        $1 = $3;
+        $1 = 34 as int?;
       } else {
         break;
       }
     }
-    $list.add($1!);
+    if (state.ok) {
+      $list.add($1!);
+    }
   }
   state.ok = true;
   $0 = $list as List<int>?;
@@ -105,13 +104,9 @@ List<int>? _chars(State<String> state) {
 }
 
 void _closeQuote(State<String> state) {
-  final $pos = state.pos;
   _quote(state);
   if (state.ok) {
     _ws(state);
-    if (!state.ok) {
-      state.pos = $pos;
-    }
   }
 }
 
@@ -122,12 +117,10 @@ String? _string(State<String> state) {
   if (state.ok) {
     List<int>? $2;
     $2 = _chars(state);
+    _closeQuote(state);
     if (state.ok) {
-      _closeQuote(state);
-      if (state.ok) {
-        final v2 = $2!;
-        $0 = String.fromCharCodes(v2) as String?;
-      }
+      final $v = ($2 as List<int>?)!;
+      $0 = String.fromCharCodes($v) as String?;
     }
   }
   if (!state.ok) {
@@ -139,20 +132,17 @@ String? _string(State<String> state) {
 String? _field(State<String> state) {
   final source = state.source;
   String? $0;
-  String? $1;
-  $1 = _string(state);
-  if (state.ok) {
-    $0 = $1;
-  } else {
-    final $error = state.error;
-    String? $2;
+  $0 = _string(state);
+  if (!state.ok) {
     final $pos = state.pos;
     while (true) {
       final $pos1 = state.pos;
       int? $c;
+      int? $3;
       state.ok = state.pos < source.length;
       if (state.ok) {
-        $c = source.readRune(state);
+        $3 = source.readRune(state) as int?;
+        $c = $3!;
         state.ok = $c > 44 || $c != 10 && $c != 13 && $c != 34 && $c != 44;
       }
       if (!state.ok) {
@@ -161,11 +151,7 @@ String? _field(State<String> state) {
       }
     }
     state.ok = true;
-    $2 = state.source.slice($pos, state.pos) as String?;
-    if (!state.ok) {
-      state.error = ErrCombined(state.pos, [$error, state.error]);
-    }
-    $0 = $2;
+    $0 = state.source.slice($pos, state.pos) as String?;
   }
   return $0;
 }
@@ -175,20 +161,20 @@ List<String>? _row(State<String> state) {
   List<String>? $0;
   var $pos = state.pos;
   final $list = <String>[];
-  for (;;) {
+  while (true) {
     String? $1;
     $1 = _field(state);
-    if (!state.ok) {
+    if (state.ok) {
+      $list.add($1!);
+    } else {
       state.pos = $pos;
       break;
     }
-    $list.add($1!);
     $pos = state.pos;
     state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 44;
     if (state.ok) {
       state.pos += 1;
     } else {
-      state.error = ErrExpected.tag(state.pos, const Tag(','));
       break;
     }
   }
@@ -225,13 +211,6 @@ String? _eol(State<String> state) {
         break;
     }
   }
-  if (!state.ok) {
-    state.error = ErrCombined($pos, [
-      ErrExpected.tag($pos, const Tag('\n')),
-      ErrExpected.tag($pos, const Tag('\r\n')),
-      ErrExpected.tag($pos, const Tag('\r'))
-    ]);
-  }
   return $0;
 }
 
@@ -248,7 +227,6 @@ void _rowEnding(State<String> state) {
     state.ok = !state.ok;
     if (!state.ok) {
       state.pos = $pos1;
-      state.error = ErrUnknown(state.pos);
       state.pos = $pos;
     }
   }
@@ -256,19 +234,19 @@ void _rowEnding(State<String> state) {
 
 List<List<String>>? _rows(State<String> state) {
   List<List<String>>? $0;
-  final $pos = state.pos;
   List<List<String>>? $1;
-  var $pos1 = state.pos;
+  var $pos = state.pos;
   final $list = <List<String>>[];
-  for (;;) {
+  while (true) {
     List<String>? $2;
     $2 = _row(state);
-    if (!state.ok) {
-      state.pos = $pos1;
+    if (state.ok) {
+      $list.add($2!);
+    } else {
+      state.pos = $pos;
       break;
     }
-    $list.add($2!);
-    $pos1 = state.pos;
+    $pos = state.pos;
     _rowEnding(state);
     if (!state.ok) {
       break;
@@ -280,13 +258,8 @@ List<List<String>>? _rows(State<String> state) {
     _eol(state);
     if (!state.ok) {
       state.ok = true;
-      if (!state.ok) {
-        state.pos = $pos;
-      }
     }
-    if (state.ok) {
-      $0 = $1;
-    }
+    $0 = $1;
   }
   return $0;
 }

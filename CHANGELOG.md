@@ -1,3 +1,7 @@
+## 0.1.31
+
+- The parser has become a little smaller after rebuilding with new version of `parser_builder`
+
 ## 0.1.30
 
 - The parsers has been rebuilt using the new version of `parser_builder`
