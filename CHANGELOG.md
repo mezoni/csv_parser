@@ -1,3 +1,7 @@
+## 0.1.32
+
+- Minor changes in the `README.md` file
+
 ## 0.1.31
 
 - The parser has become a little smaller after rebuilding with new version of `parser_builder`
