@@ -1,3 +1,7 @@
+## 0.1.33
+
+- The parsers has been rebuilt using the new version of `parser_builder`
+
 ## 0.1.32
 
 - Minor changes in the `README.md` file
