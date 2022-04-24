@@ -197,13 +197,13 @@ List<String>? _row(State<String> state) {
   final $list = <String>[];
   final $log = state.log;
   while (true) {
-    state.log = $list.isEmpty;
     String? $1;
     $1 = _field(state);
     if (!state.ok) {
       state.pos = $pos;
       break;
     }
+    state.log = false;
     $list.add($1!);
     $pos = state.pos;
     String? $2;
@@ -235,8 +235,8 @@ List<String>? _row(State<String> state) {
 String? _eol(State<String> state) {
   String? $0;
   final source = state.source;
-  state.ok = false;
-  if (state.pos < source.length) {
+  state.ok = state.pos < source.length;
+  if (state.ok) {
     final pos = state.pos;
     final c = source.codeUnitAt(pos);
     String? v;
@@ -307,13 +307,13 @@ List<List<String>>? _rows(State<String> state) {
   final $list = <List<String>>[];
   final $log = state.log;
   while (true) {
-    state.log = $list.isEmpty;
     List<String>? $1;
     $1 = _row(state);
     if (!state.ok) {
       state.pos = $pos1;
       break;
     }
+    state.log = false;
     $list.add($1!);
     $pos1 = state.pos;
     _rowEnding(state);

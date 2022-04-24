@@ -1,3 +1,7 @@
+## 0.1.34
+
+- Changed dependency in `pubspec.yaml` for `parser_builder` from `github` to `pub.dev`.
+
 ## 0.1.33
 
 - The parsers has been rebuilt using the new version of `parser_builder`
