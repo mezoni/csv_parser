@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.33
+Version: 0.1.35
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -69,7 +69,7 @@ List<List<String>> parse(String source) {
   final state = State(source);
   final result = _parse(state);
   if (!state.ok) {
-    final errors = Err.errorReport(state.error);
+    final errors = ParseError.errorReport(state.errors);
     final message = _errorMessage(source, errors);
     throw FormatException('\n$message');
   }

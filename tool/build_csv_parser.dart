@@ -31,7 +31,7 @@ List<List<String>> parse(String source) {
   final state = State(source);
   final result = _parse(state);
   if (!state.ok) {
-    final errors = Err.errorReport(state.error);
+    final errors = ParseError.errorReport(state.errors);
     final message = _errorMessage(source, errors);
     throw FormatException('\n$message');
   }
