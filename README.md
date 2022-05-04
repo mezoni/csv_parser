@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.35
+Version: 0.1.36
 
 Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
@@ -206,19 +206,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3131.493 ms
-Time passed: 3.133, Test 'fast_csv_ex': 821.692 ms
-Time passed: 3.955, Test 'fast_csv': 694.808 ms
-Time passed: 4.650, Test 'csv': 3063.664 ms
-Time passed: 7.713, Test 'fast_csv_ex': 709.31 ms
-Time passed: 8.423, Test 'fast_csv': 701.849 ms
-Time passed: 9.125, Test 'csv': 3062.786 ms
-Time passed: 12.187, Test 'fast_csv_ex': 710.436 ms
-Time passed: 12.898, Test 'fast_csv': 718.628 ms
-Time passed: 13.617, Test 'csv': 3029.437 ms
-Time passed: 16.646, Test 'fast_csv_ex': 769.776 ms
-Time passed: 17.416, Test 'fast_csv': 734.852 ms
-Time passed: 18.151, Test 'csv': 3042.506 ms
-Time passed: 21.194, Test 'fast_csv_ex': 755.745 ms
-Time passed: 21.949, Test 'fast_csv': 725.891 ms
+Time passed: 0.000, Test 'csv': 3203.203 ms
+Time passed: 3.205, Test 'fast_csv_ex': 797.544 ms
+Time passed: 4.002, Test 'fast_csv': 648.173 ms
+Time passed: 4.651, Test 'csv': 3170.619 ms
+Time passed: 7.821, Test 'fast_csv_ex': 695.277 ms
+Time passed: 8.517, Test 'fast_csv': 671.926 ms
+Time passed: 9.189, Test 'csv': 3172.676 ms
+Time passed: 12.361, Test 'fast_csv_ex': 737.049 ms
+Time passed: 13.098, Test 'fast_csv': 708.694 ms
+Time passed: 13.807, Test 'csv': 3153.299 ms
+Time passed: 16.961, Test 'fast_csv_ex': 756.11 ms
+Time passed: 17.717, Test 'fast_csv': 724.735 ms
+Time passed: 18.442, Test 'csv': 3149.212 ms
+Time passed: 21.591, Test 'fast_csv_ex': 766.846 ms
+Time passed: 22.358, Test 'fast_csv': 726.584 ms
 ```

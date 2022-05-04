@@ -24,7 +24,8 @@ List<List<String>> parse(String source, {String separator = ','}) {
       _StateContext(separator: separator, separatorChar: separatorChar);
   final result = _parse(state);
   if (!state.ok) {
-    final errors = ParseError.errorReport(state.errors);
+    final offset = state.errorPos;
+    final errors = ParseError.errorReport(offset, state.errors);
     final message = _errorMessage(source, errors);
     throw FormatException('\n$message');
   }
@@ -51,7 +52,7 @@ void _quote(State<String> state) {
   if (state.ok) {
     state.pos += 1;
   } else {
-    state.error = ParseError.expected(state.pos, '"');
+    state.fail(state.pos, const ParseError.expected('"'));
   }
 }
 
@@ -81,10 +82,10 @@ List<int>? _chars(State<String> state) {
         $1 = c;
       } else {
         state.pos = pos;
-        state.error = ParseError.unexpected(state.pos, 0, c);
+        state.fail(state.pos, ParseError.unexpected(0, c));
       }
     } else {
-      state.error = ParseError.unexpected(state.pos, 0, 'EOF');
+      state.fail(state.pos, const ParseError.unexpected(0, 'EOF'));
     }
     if (!state.ok) {
       state.ok = state.pos + 1 < source.length &&
@@ -93,7 +94,7 @@ List<int>? _chars(State<String> state) {
       if (state.ok) {
         state.pos += 2;
       } else {
-        state.error = ParseError.expected(state.pos, '""');
+        state.fail(state.pos, const ParseError.expected('""'));
       }
       if (state.ok) {
         $1 = 34;
@@ -193,7 +194,7 @@ List<String>? _row(State<String> state) {
       if (state.ok) {
         state.pos += tag.length;
       } else {
-        state.error = ParseError.expected(state.pos, tag);
+        state.fail(state.pos, ParseError.expected(tag));
       }
     }
     if (!state.ok) {
@@ -232,9 +233,9 @@ void _eol(State<String> state) {
     state.ok = v != null;
   }
   if (!state.ok) {
-    state.error = ParseError.expected(state.pos, '\n');
-    state.error = ParseError.expected(state.pos, '\r\n');
-    state.error = ParseError.expected(state.pos, '\r');
+    state.fail(state.pos, const ParseError.expected('\n'));
+    state.fail(state.pos, const ParseError.expected('\r\n'));
+    state.fail(state.pos, const ParseError.expected('\r'));
   }
 }
 
@@ -242,7 +243,7 @@ void _eof(State<String> state) {
   final source = state.source;
   state.ok = state.pos >= source.length;
   if (!state.ok) {
-    state.error = ParseError.expected(state.pos, 'EOF');
+    state.fail(state.pos, const ParseError.expected('EOF'));
   }
 }
 
@@ -258,9 +259,7 @@ void _rowEnding(State<String> state) {
     state.ok = !state.ok;
     if (!state.ok) {
       state.pos = $pos1;
-      if ($log) {
-        state.error = ParseError.message(state.pos, 0, 'Unknown error');
-      }
+      state.fail(state.pos, const ParseError.message(0, 'Unknown error'));
     }
   }
   if (!state.ok) {
@@ -318,7 +317,7 @@ List<List<String>>? _parse(State<String> state) {
   return $0;
 }
 
-String _errorMessage(String source, List<ParseError> errors,
+String _errorMessage(String source, List<ParserException> errors,
     [color, int maxCount = 10, String? url]) {
   final sb = StringBuffer();
   for (var i = 0; i < errors.length; i++) {
@@ -327,12 +326,14 @@ String _errorMessage(String source, List<ParseError> errors,
     }
 
     final error = errors[i];
-    if (error.offset + error.length > source.length) {
-      source += ' ' * (error.offset + error.length - source.length);
+    final start = error.start;
+    final end = error.end;
+    if (end > source.length) {
+      source += ' ' * (end - source.length);
     }
 
     final file = SourceFile.fromString(source, url: url);
-    final span = file.span(error.offset, error.offset + error.length);
+    final span = file.span(start, end);
     if (sb.isNotEmpty) {
       sb.writeln();
     }
@@ -353,31 +354,29 @@ class ParseError {
 
   final int length;
 
-  final int offset;
-
   final Object? value;
 
-  ParseError.expected(this.offset, this.value)
+  const ParseError.expected(this.value)
       : kind = ParseErrorKind.expected,
         length = 0;
 
-  ParseError.message(this.offset, this.length, String message)
+  const ParseError.message(this.length, String message)
       : kind = ParseErrorKind.message,
         value = message;
 
-  ParseError.unexpected(this.offset, this.length, this.value)
+  const ParseError.unexpected(this.length, this.value)
       : kind = ParseErrorKind.unexpected;
 
+  const ParseError._(this.kind, this.length, this.value);
+
   @override
-  int get hashCode =>
-      kind.hashCode ^ length.hashCode ^ offset.hashCode ^ value.hashCode;
+  int get hashCode => kind.hashCode ^ length.hashCode ^ value.hashCode;
 
   @override
   bool operator ==(other) {
     return other is ParseError &&
         other.kind == kind &&
         other.length == length &&
-        other.offset == offset &&
         other.value == value;
   }
 
@@ -393,34 +392,38 @@ class ParseError {
     }
   }
 
-  static List<ParseError> errorReport(List<ParseError> errors) {
-    final result = errors.toSet().toList();
-    final expected = <int, List<ParseError>>{};
-    for (final error
-        in result.where((e) => e.kind == ParseErrorKind.expected)) {
-      final offset = error.offset;
-      var list = expected[offset];
-      if (list == null) {
-        list = [];
-        expected[offset] = list;
-      }
-
-      list.add(error);
+  static List<ParserException> errorReport(
+      int offset, List<ParseError> errors) {
+    final expected = errors.where((e) => e.kind == ParseErrorKind.expected);
+    final result = <ParserException>[];
+    if (expected.isNotEmpty) {
+      final values = expected.map((e) => '\'${_escape(e.value)}\'').join(', ');
+      result.add(ParserException(offset, 0, 'Expected: $values'));
     }
 
-    result.removeWhere((e) => e.kind == ParseErrorKind.expected);
-    for (var i = 0; i < result.length; i++) {
-      final error = result[i];
-      if (error.kind == ParseErrorKind.unexpected) {
-        result[i] = ParseError.unexpected(
-            error.offset, error.length, _escape(error.value));
-      }
-    }
+    for (var i = 0; i < errors.length; i++) {
+      final error = errors[i];
+      switch (error.kind) {
+        case ParseErrorKind.expected:
+          break;
+        case ParseErrorKind.message:
+          var length = error.length;
+          var newOffset = offset;
+          if (length < 0) {
+            newOffset += length;
+            length = -length;
+          }
 
-    for (var offset in expected.keys) {
-      final list = expected[offset]!;
-      final values = list.map((e) => _escape(e.value)).join(', ');
-      result.add(ParseError.message(offset, 0, 'Expected: $values'));
+          final newError =
+              ParserException(newOffset, length, error.value as String);
+          result.add(newError);
+          break;
+        case ParseErrorKind.unexpected:
+          final newError = ParserException(
+              offset, error.length, '\'${_escape(error.value)}\'');
+          result.add(newError);
+          break;
+      }
     }
 
     return result;
@@ -451,18 +454,32 @@ class ParseError {
       result = result.replaceAll(key, map[key]!);
     }
 
-    return '\'$result\'';
+    return result;
   }
 }
 
 enum ParseErrorKind { expected, message, unexpected }
 
+class ParserException {
+  final int end;
+
+  final int start;
+
+  final String text;
+
+  ParserException(this.start, this.end, this.text);
+}
+
 class State<T> {
   dynamic context;
 
-  bool log = true;
+  int errorPos = -1;
 
-  int nested = -1;
+  int lastErrorPos = -1;
+
+  int minErrorPos = -1;
+
+  bool log = true;
 
   bool ok = false;
 
@@ -470,41 +487,75 @@ class State<T> {
 
   final T source;
 
-  ParseError? _error;
-
-  int _errorPos = -1;
+  final List<ParseError?> _errors = List.filled(500, null);
 
   int _length = 0;
 
-  final List _list = List.filled(100, null);
+  final List<_Memo> _memos = [];
 
   State(this.source);
 
-  set error(ParseError error) {
-    final offset = error.offset;
-    if (offset > nested && log) {
-      if (_errorPos < offset) {
-        _errorPos = offset;
-        _length = 1;
-        _error = error;
-      } else if (_errorPos == offset) {
-        if (_length == 1) {
-          _list[0] = _error;
+  void fail(int pos, ParseError error) {
+    if (log) {
+      if (errorPos <= pos && minErrorPos <= pos) {
+        if (errorPos < pos) {
+          errorPos = pos;
+          _length = 0;
         }
+        _errors[_length++] = error;
+      }
 
-        if (_length < _list.length) {
-          _list[_length++] = error;
-        }
+      if (lastErrorPos < pos) {
+        lastErrorPos = pos;
       }
     }
   }
 
   List<ParseError> get errors {
-    if (_length == 1) {
-      return [_error!];
-    } else {
-      return List.generate(_length, (i) => _list[i] as ParseError);
+    return List.generate(_length, (i) => _errors[i]!);
+  }
+
+  @pragma('vm:prefer-inline')
+  void memoize<R>(int id, bool fast, int start, [R? result]) {
+    final memo = _Memo(id, fast, start, pos, ok, result);
+    for (var i = 0; i < _memos.length; i++) {
+      if (_memos[i].id == id) {
+        _memos[i] = memo;
+        return;
+      }
     }
+
+    _memos.add(memo);
+  }
+
+  @pragma('vm:prefer-inline')
+  _Memo<R>? memoized<R>(int id, bool fast, int start) {
+    for (var i = 0; i < _memos.length; i++) {
+      final memo = _memos[i];
+      if (memo.id == id) {
+        if (memo.canRestore(start, fast)) {
+          return memo as _Memo<R>;
+        }
+
+        break;
+      }
+    }
+
+    return null;
+  }
+
+  @pragma('vm:prefer-inline')
+  void restoreLastErrorPos(int pos) {
+    if (lastErrorPos < pos) {
+      lastErrorPos = pos;
+    }
+  }
+
+  @pragma('vm:prefer-inline')
+  int setLastErrorPos(int pos) {
+    final result = lastErrorPos;
+    lastErrorPos = pos;
+    return result;
   }
 
   @override
@@ -569,6 +620,34 @@ extension on String {
   // ignore: unused_element
   String slice(int start, int end) {
     return substring(start, end);
+  }
+}
+
+class _Memo<T> {
+  final int end;
+
+  final bool fast;
+
+  final int id;
+
+  final bool ok;
+
+  final T? result;
+
+  final int start;
+
+  _Memo(this.id, this.fast, this.start, this.end, this.ok, this.result);
+
+  @pragma('vm:prefer-inline')
+  bool canRestore(int start, bool fast) {
+    return this.start == start && (this.fast == fast || !this.fast);
+  }
+
+  @pragma('vm:prefer-inline')
+  T? restore(State state) {
+    state.ok = ok;
+    state.pos = end;
+    return result;
   }
 }
 
