@@ -69,8 +69,7 @@ List<List<String>> parse(String source) {
   final state = State(source);
   final result = _parse(state);
   if (!state.ok) {
-    final errors = ParseError.errorReport(state.errors);
-    final message = _errorMessage(source, errors);
+    final message = _errorMessage(source, state.errors);
     throw FormatException('\n$message');
   }
 
@@ -206,19 +205,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3203.203 ms
-Time passed: 3.205, Test 'fast_csv_ex': 797.544 ms
-Time passed: 4.002, Test 'fast_csv': 648.173 ms
-Time passed: 4.651, Test 'csv': 3170.619 ms
-Time passed: 7.821, Test 'fast_csv_ex': 695.277 ms
-Time passed: 8.517, Test 'fast_csv': 671.926 ms
-Time passed: 9.189, Test 'csv': 3172.676 ms
-Time passed: 12.361, Test 'fast_csv_ex': 737.049 ms
-Time passed: 13.098, Test 'fast_csv': 708.694 ms
-Time passed: 13.807, Test 'csv': 3153.299 ms
-Time passed: 16.961, Test 'fast_csv_ex': 756.11 ms
-Time passed: 17.717, Test 'fast_csv': 724.735 ms
-Time passed: 18.442, Test 'csv': 3149.212 ms
-Time passed: 21.591, Test 'fast_csv_ex': 766.846 ms
-Time passed: 22.358, Test 'fast_csv': 726.584 ms
+Time passed: 0.000, Test 'csv': 3120.185 ms
+Time passed: 3.122, Test 'fast_csv_ex': 748.974 ms
+Time passed: 3.871, Test 'fast_csv': 634.764 ms
+Time passed: 4.506, Test 'csv': 3083.998 ms
+Time passed: 7.590, Test 'fast_csv_ex': 648.111 ms
+Time passed: 8.238, Test 'fast_csv': 653.347 ms
+Time passed: 8.891, Test 'csv': 3049.418 ms
+Time passed: 11.941, Test 'fast_csv_ex': 709.234 ms
+Time passed: 12.650, Test 'fast_csv': 685.714 ms
+Time passed: 13.336, Test 'csv': 3077.536 ms
+Time passed: 16.413, Test 'fast_csv_ex': 727.57 ms
+Time passed: 17.141, Test 'fast_csv': 692.093 ms
+Time passed: 17.833, Test 'csv': 3058.838 ms
+Time passed: 20.892, Test 'fast_csv_ex': 726.068 ms
+Time passed: 21.618, Test 'fast_csv': 685.781 ms
 ```
