@@ -1,5 +1,5 @@
 name: fast_csv
-version: 0.1.36
+version: 0.1.37
 description: Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 repository: https://github.com/mezoni/csv_parser
 environment:
@@ -8,5 +8,5 @@ dependencies:
   source_span: ^1.8.2
 dev_dependencies:
   lints: ^1.0.1
-  parser_builder: ^2.0.4
+  parser_builder: ^2.0.5
   test: ^1.20.1
