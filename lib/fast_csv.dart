@@ -25,7 +25,7 @@ void _ws(State<String> state) {
   final source = state.source;
   while (state.pos < source.length) {
     final c = source.codeUnitAt(state.pos);
-    final ok = c == 9 || c == 32;
+    final ok = c <= 9 ? c == 9 : c == 32;
     if (!ok) {
       break;
     }
@@ -65,7 +65,7 @@ List<int>? _chars(State<String> state) {
     if (state.ok) {
       final pos = state.pos;
       final c = source.readRune(state);
-      state.ok = c != 34;
+      state.ok = !(c == 34);
       if (state.ok) {
         $1 = c;
       } else {
@@ -141,7 +141,13 @@ String? _field(State<String> state) {
     while (state.pos < source.length) {
       final pos = state.pos;
       final c = source.readRune(state);
-      final ok = c > 44 || c != 10 && c != 13 && c != 34 && c != 44;
+      final ok = !(c <= 13
+          ? c <= 10
+              ? c == 10
+              : c == 13
+          : c <= 34
+              ? c == 34
+              : c == 44);
       if (!ok) {
         state.pos = pos;
         break;
@@ -193,20 +199,17 @@ void _eol(State<String> state) {
     final pos = state.pos;
     final c = source.codeUnitAt(pos);
     String? v;
-    switch (c) {
-      case 10:
-        state.pos++;
-        v = '\n';
-        break;
-      case 13:
-        if (source.startsWith('\r\n', pos)) {
-          state.pos += 2;
-          v = '\r\n';
-          break;
-        }
+    if (c == 10) {
+      state.pos++;
+      v = '\n';
+    } else if (c == 13) {
+      if (source.startsWith('\r\n', pos)) {
+        state.pos += 2;
+        v = '\r\n';
+      } else {
         state.pos++;
         v = '\r';
-        break;
+      }
     }
     state.ok = v != null;
   }
@@ -296,7 +299,7 @@ List<List<String>>? _parse(State<String> state) {
 }
 
 String _errorMessage(String source, List<ParseError> errors,
-    [color, int maxCount = 10, String? url]) {
+    [Object? color, int maxCount = 10, String? url]) {
   final sb = StringBuffer();
   for (var i = 0; i < errors.length; i++) {
     if (i > maxCount) {
@@ -305,13 +308,13 @@ String _errorMessage(String source, List<ParseError> errors,
 
     final error = errors[i];
     final start = error.start;
-    final end = error.end;
+    final end = error.end + 1;
     if (end > source.length) {
       source += ' ' * (end - source.length);
     }
 
     final file = SourceFile.fromString(source, url: url);
-    final span = file.span(start, end + 1);
+    final span = file.span(start, end);
     if (sb.isNotEmpty) {
       sb.writeln();
     }
@@ -385,14 +388,14 @@ class State<T> {
 
   final List<_Memo?> _memos = List.filled(150, null);
 
-  final List _values = List.filled(150, null);
+  final List<Object?> _values = List.filled(150, null);
 
   State(this.source);
 
   List<ParseError> get errors => _buildErrors();
 
   @pragma('vm:prefer-inline')
-  void fail(int pos, int kind, int length, value) {
+  void fail(int pos, int kind, int length, Object? value) {
     if (log) {
       if (errorPos <= pos && minErrorPos <= pos) {
         if (errorPos < pos) {
@@ -414,7 +417,7 @@ class State<T> {
 
   @pragma('vm:prefer-inline')
   void memoize<R>(int id, bool fast, int start, [R? result]) =>
-      _memos[id] = _Memo(id, fast, start, pos, ok, result);
+      _memos[id] = _Memo<R>(id, fast, start, pos, ok, result);
 
   @pragma('vm:prefer-inline')
   _Memo<R>? memoized<R>(int id, bool fast, int start) {
@@ -464,13 +467,13 @@ class State<T> {
       final kind = _kinds[i];
       if (kind == ParseError.expected) {
         var value = _values[i];
-        value = _escape(value);
-        expected.add(value);
+        final escaped = _escape(value);
+        expected.add(escaped);
       }
     }
 
     if (expected.isNotEmpty) {
-      final text = 'Expected: ${expected.join(', ')}';
+      final text = 'Expected: ${expected.toSet().join(', ')}';
       final error = ParseError(errorPos, errorPos, text);
       result.add(error);
     }
@@ -493,8 +496,9 @@ class State<T> {
             final string = source as String;
             if (start < string.length) {
               value = string.runeAt(errorPos);
-              value = _escape(value);
-              final error = ParseError(errorPos, errorPos, "Unexpected $value");
+              final escaped = _escape(value);
+              final error =
+                  ParseError(errorPos, errorPos, 'Unexpected $escaped');
               result.add(error);
             } else {
               final error = ParseError(errorPos, errorPos, "Unexpected 'EOF'");
@@ -502,7 +506,7 @@ class State<T> {
             }
           } else {
             final error =
-                ParseError(errorPos, errorPos, "Unexpected character");
+                ParseError(errorPos, errorPos, 'Unexpected character');
             result.add(error);
           }
 
@@ -514,8 +518,8 @@ class State<T> {
           result.add(error);
           break;
         case ParseError.unexpected:
-          value = _escape(value);
-          final error = ParseError(start, end, 'Unexpected $value');
+          final escaped = _escape(value);
+          final error = ParseError(start, end, 'Unexpected $escaped');
           result.add(error);
           break;
         default:
@@ -527,7 +531,7 @@ class State<T> {
     return result.toSet().toList();
   }
 
-  String _escape(value, [bool quote = true]) {
+  String _escape(Object? value, [bool quote = true]) {
     if (value is int) {
       if (value >= 0 && value <= 0xd7ff ||
           value >= 0xe000 && value <= 0x10ffff) {
@@ -543,7 +547,7 @@ class State<T> {
       '\b': '\\b',
       '\f': '\\f',
       '\n': '\\n',
-      '\r': '\\t',
+      '\r': '\\r',
       '\t': '\\t',
       '\v': '\\v',
     };
