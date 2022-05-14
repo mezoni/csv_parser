@@ -65,7 +65,7 @@ List<int>? _chars(State<String> state) {
     if (state.ok) {
       final pos = state.pos;
       final c = source.readRune(state);
-      state.ok = !(c == 34);
+      state.ok = c != 34;
       if (state.ok) {
         $1 = c;
       } else {
@@ -388,6 +388,8 @@ class State<T> {
 
   final List<_Memo?> _memos = List.filled(150, null);
 
+  final List<int> _starts = List.filled(150, 0);
+
   final List<Object?> _values = List.filled(150, null);
 
   State(this.source);
@@ -395,7 +397,7 @@ class State<T> {
   List<ParseError> get errors => _buildErrors();
 
   @pragma('vm:prefer-inline')
-  void fail(int pos, int kind, int length, Object? value) {
+  void fail(int pos, int kind, int length, Object? value, [int start = -1]) {
     if (log) {
       if (errorPos <= pos && minErrorPos <= pos) {
         if (errorPos < pos) {
@@ -405,6 +407,7 @@ class State<T> {
 
         _kinds[_length] = kind;
         _lengths[_length] = length;
+        _starts[_length] = start;
         _values[_length] = value;
         _length++;
       }
@@ -466,7 +469,7 @@ class State<T> {
     for (var i = 0; i < _length; i++) {
       final kind = _kinds[i];
       if (kind == ParseError.expected) {
-        var value = _values[i];
+        final value = _values[i];
         final escaped = _escape(value);
         expected.add(escaped);
       }
@@ -480,13 +483,11 @@ class State<T> {
 
     for (var i = 0; i < _length; i++) {
       final kind = _kinds[i];
-      var length = _lengths[i];
+      final length = _lengths[i];
       var value = _values[i];
-      var start = errorPos;
-      final sign = length >= 0 ? 1 : -1;
-      length = length * sign;
-      if (sign == -1) {
-        start = start - length;
+      var start = _starts[i];
+      if (start < 0) {
+        start = errorPos;
       }
 
       final end = start + (length > 0 ? length - 1 : 0);
