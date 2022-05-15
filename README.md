@@ -2,9 +2,9 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.39
+Version: 0.1.40
 
-Also demonstrates an example of creating a parser using [`parser_builder`](https://github.com/mezoni/parser_builder).  
+This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://github.com/mezoni/parser_builder).  
 Creating a fast parser is very easy.  
 It may be a little slower, a little faster, or have the same performance as a handwritten one, but the time it takes to create it can be reduced by several times using [`parser_builder`](https://github.com/mezoni/parser_builder).
 
@@ -205,19 +205,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3120.185 ms
-Time passed: 3.122, Test 'fast_csv_ex': 748.974 ms
-Time passed: 3.871, Test 'fast_csv': 634.764 ms
-Time passed: 4.506, Test 'csv': 3083.998 ms
-Time passed: 7.590, Test 'fast_csv_ex': 648.111 ms
-Time passed: 8.238, Test 'fast_csv': 653.347 ms
-Time passed: 8.891, Test 'csv': 3049.418 ms
-Time passed: 11.941, Test 'fast_csv_ex': 709.234 ms
-Time passed: 12.650, Test 'fast_csv': 685.714 ms
-Time passed: 13.336, Test 'csv': 3077.536 ms
-Time passed: 16.413, Test 'fast_csv_ex': 727.57 ms
-Time passed: 17.141, Test 'fast_csv': 692.093 ms
-Time passed: 17.833, Test 'csv': 3058.838 ms
-Time passed: 20.892, Test 'fast_csv_ex': 726.068 ms
-Time passed: 21.618, Test 'fast_csv': 685.781 ms
+Time passed: 0.000, Test 'csv': 3127.011 ms
+Time passed: 3.129, Test 'fast_csv_ex': 724.131 ms
+Time passed: 3.853, Test 'fast_csv': 656.715 ms
+Time passed: 4.510, Test 'csv': 3125.168 ms
+Time passed: 7.635, Test 'fast_csv_ex': 680.121 ms
+Time passed: 8.315, Test 'fast_csv': 654.836 ms
+Time passed: 8.970, Test 'csv': 3108.306 ms
+Time passed: 12.078, Test 'fast_csv_ex': 669.119 ms
+Time passed: 12.748, Test 'fast_csv': 658.143 ms
+Time passed: 13.406, Test 'csv': 3091.034 ms
+Time passed: 16.497, Test 'fast_csv_ex': 673.975 ms
+Time passed: 17.171, Test 'fast_csv': 654.392 ms
+Time passed: 17.825, Test 'csv': 3120.856 ms
+Time passed: 20.946, Test 'fast_csv_ex': 683.729 ms
+Time passed: 21.630, Test 'fast_csv': 656.846 ms
 ```

@@ -59,9 +59,9 @@ void _openQuote(State<String> state) {
   _ws(state);
   if (state.ok) {
     _quote(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -115,9 +115,9 @@ void _closeQuote(State<String> state) {
   _quote(state);
   if (state.ok) {
     _ws(state);
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -256,9 +256,9 @@ void _rowEnding(State<String> state) {
       state.pos = $pos1;
       state.fail(state.pos, ParseError.message, 0, 'Unknown error');
     }
-  }
-  if (!state.ok) {
-    state.pos = $pos;
+    if (!state.ok) {
+      state.pos = $pos;
+    }
   }
 }
 
@@ -290,10 +290,10 @@ List<List<String>>? _rows(State<String> state) {
     if (!state.ok) {
       state.ok = true;
     }
-  }
-  if (!state.ok) {
-    $0 = null;
-    state.pos = $pos;
+    if (!state.ok) {
+      $0 = null;
+      state.pos = $pos;
+    }
   }
   return $0;
 }
@@ -304,10 +304,10 @@ List<List<String>>? _parse(State<String> state) {
   $0 = _rows(state);
   if (state.ok) {
     _eof(state);
-  }
-  if (!state.ok) {
-    $0 = null;
-    state.pos = $pos;
+    if (!state.ok) {
+      $0 = null;
+      state.pos = $pos;
+    }
   }
   return $0;
 }
