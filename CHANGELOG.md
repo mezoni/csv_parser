@@ -1,3 +1,8 @@
+## 0.1.41
+
+- The parsers has been rebuilt using the new version of `parser_builder`
+- The generated parsers no longer have dependencies and the size of the code is entirely determined by the size of the parser, which allows them to be used in lightweight web applications
+
 ## 0.1.40
 
 - The parsers has been rebuilt using the new version of `parser_builder`
