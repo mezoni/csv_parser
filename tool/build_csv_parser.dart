@@ -3,6 +3,7 @@ import 'package:parser_builder/bytes.dart';
 import 'package:parser_builder/char_class.dart';
 import 'package:parser_builder/character.dart';
 import 'package:parser_builder/combinator.dart';
+import 'package:parser_builder/error.dart';
 import 'package:parser_builder/fast_build.dart';
 import 'package:parser_builder/multi.dart';
 import 'package:parser_builder/parser_builder.dart';
@@ -66,10 +67,19 @@ const _rowEnding = Named('_rowEnding', Fast<String>(Pair(_eol, Not(_eof))));
 const _rows =
     Named('_rows', Terminated(SeparatedList1(_row, _rowEnding), Opt(_eol)));
 
-const _string = Named(
+const _string = Named<String, String>(
     '_string',
-    Map3(_openQuote, _chars, _closeQuote,
-        ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')));
+    WithStartAndLastErrorPos(
+      Map3(
+          _openQuote,
+          _chars,
+          Alt2(
+            _closeQuote,
+            FailMessage(
+                FailPos.lastErrorPos, 'Unterminated string', FailPos.start),
+          ),
+          ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')),
+    ));
 
 const _text = TakeWhile(NotCharClass('[,"] | #xA | #xD'));
 

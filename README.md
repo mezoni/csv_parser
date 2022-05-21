@@ -2,11 +2,11 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.41
+Version: 0.1.40
 
-This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://github.com/mezoni/parser_builder).  
+This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://pub.dev/packages/parser_builder).  
 Creating a fast parser is very easy.  
-It may be a little slower, a little faster, or have the same performance as a handwritten one, but the time it takes to create it can be reduced by several times using [`parser_builder`](https://github.com/mezoni/parser_builder).
+It may be a little slower, a little faster, or have the same performance as a handwritten one, but the time it takes to create it can be reduced by several times using [`parser_builder`](https://pub.dev/packages/parser_builder).
 
 ## Example of the parser usage
 

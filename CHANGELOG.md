@@ -2,6 +2,7 @@
 
 - The parsers has been rebuilt using the new version of `parser_builder`
 - The generated parsers no longer have dependencies and the size of the code is entirely determined by the size of the parser, which allows them to be used in lightweight web applications
+- Implemented the ability to generate an error `Unterminated string` indicating the position at the beginning of the string value in the field in which this error was detected. This makes it much easier to find format violations
 
 ## 0.1.40
 

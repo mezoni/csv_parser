@@ -3,6 +3,7 @@ import 'package:parser_builder/bytes.dart';
 import 'package:parser_builder/char_class.dart';
 import 'package:parser_builder/character.dart';
 import 'package:parser_builder/combinator.dart';
+import 'package:parser_builder/error.dart';
 import 'package:parser_builder/fast_build.dart';
 import 'package:parser_builder/multi.dart';
 import 'package:parser_builder/parser_builder.dart';
@@ -75,6 +76,10 @@ const _eol = Named('_eol', Tags(['\n', '\r\n', '\r']));
 
 const _field = Named('_field', Alt2(_string, _text));
 
+const _isSeparator = VariableAction<bool>(
+    ['c'], '{{c}} != 0xA && {{c}} != 0xD && {{c}} != 0x22 && {{c}} != {{sep}}',
+    key: 'sep', init: '(state.context as _StateContext).separatorChar');
+
 const _openQuote = Named('_openQuote', Fast<String>(Pair(_ws, _quote)));
 
 const _parse = Named('_parse', Terminated(_rows, _eof));
@@ -91,15 +96,20 @@ const _rows =
 const _separator = TagOf(Calculate(VariableAction([], '{{sep}}',
     key: 'sep', init: '(state.context as _StateContext).separator')));
 
-const _string = Named(
+const _string = Named<String, String>(
     '_string',
-    Map3(_openQuote, _chars, _closeQuote,
-        ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')));
+    WithStartAndLastErrorPos(
+      Map3(
+          _openQuote,
+          _chars,
+          Alt2(
+            _closeQuote,
+            FailMessage(
+                FailPos.lastErrorPos, 'Unterminated string', FailPos.start),
+          ),
+          ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')),
+    ));
 
 const _text = TakeWhile(_isSeparator);
 
 const _ws = Named('_ws', SkipWhile(CharClass('#x9 | #x20')));
-
-const _isSeparator = VariableAction<bool>(
-    ['c'], '{{c}} != 0xA && {{c}} != 0xD && {{c}} != 0x22 && {{c}} != {{sep}}',
-    key: 'sep', init: '(state.context as _StateContext).separatorChar');
