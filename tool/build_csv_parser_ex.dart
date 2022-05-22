@@ -105,7 +105,7 @@ const _string = Named<String, String>(
           Alt2(
             _closeQuote,
             FailMessage(
-                FailPos.lastErrorPos, 'Unterminated string', FailPos.start),
+                StatePos.lastErrorPos, 'Unterminated string', StatePos.start),
           ),
           ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')),
     ));
