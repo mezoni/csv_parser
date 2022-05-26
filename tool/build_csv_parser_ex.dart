@@ -7,6 +7,7 @@ import 'package:parser_builder/error.dart';
 import 'package:parser_builder/fast_build.dart';
 import 'package:parser_builder/multi.dart';
 import 'package:parser_builder/parser_builder.dart';
+import 'package:parser_builder/semantic_value.dart';
 import 'package:parser_builder/sequence.dart';
 
 void main(List<String> args) async {
@@ -98,14 +99,17 @@ const _separator = TagOf(Calculate(VariableAction([], '{{sep}}',
 
 const _string = Named<String, String>(
     '_string',
-    WithStartAndLastErrorPos(
+    HandleLastErrorPos(
       Map3(
-          _openQuote,
+          StartPositionToValue('start', _openQuote),
           _chars,
           Alt2(
             _closeQuote,
             FailMessage(
-                StatePos.lastErrorPos, 'Unterminated string', StatePos.start),
+              LastErrorPositionAction(),
+              'Unterminated string',
+              FromValueAction('start'),
+            ),
           ),
           ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')),
     ));

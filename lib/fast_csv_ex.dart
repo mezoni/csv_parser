@@ -78,10 +78,10 @@ List<int>? _chars(State<String> state) {
         $1 = c;
       } else {
         state.pos = pos;
-        state.fail(state.pos, ParseError.character, null);
+        state.fail(state.pos, ParseError.character);
       }
     } else {
-      state.fail(state.pos, ParseError.character, null);
+      state.fail(state.pos, ParseError.character);
     }
     if (!state.ok) {
       state.ok = state.pos + 1 < source.length &&
@@ -121,10 +121,10 @@ void _closeQuote(State<String> state) {
 
 String? _string(State<String> state) {
   String? $0;
-  final $pos = state.start;
-  state.start = state.pos;
-  final $pos1 = state.setLastErrorPos(-1);
-  final $pos2 = state.pos;
+  int? $start;
+  final $pos = state.setLastErrorPos(-1);
+  final $pos1 = state.pos;
+  $start = state.pos;
   _openQuote(state);
   if (state.ok) {
     List<int>? $1;
@@ -132,9 +132,8 @@ String? _string(State<String> state) {
     if (state.ok) {
       _closeQuote(state);
       if (!state.ok) {
-        state.fail(
-            state.lastErrorPos, ParseError.message, 'Unterminated string',
-            start: state.start);
+        state.fail(state.lastErrorPos, ParseError.message,
+            'Unterminated string', State.as<int>($start));
       }
       if (state.ok) {
         final v1 = $1!;
@@ -143,10 +142,9 @@ String? _string(State<String> state) {
     }
   }
   if (!state.ok) {
-    state.pos = $pos2;
+    state.pos = $pos1;
   }
-  state.restoreLastErrorPos($pos1);
-  state.start = $pos;
+  state.restoreLastErrorPos($pos);
   return $0;
 }
 
@@ -482,15 +480,13 @@ class State<T> {
 
   int pos = 0;
 
-  int start = 0;
-
   final T source;
+
+  final List<int> _ends = List.filled(150, 0);
 
   final List<int> _kinds = List.filled(150, 0);
 
   int _length = 0;
-
-  final List<int> _lengths = List.filled(150, 0);
 
   final List<int> _starts = List.filled(150, 0);
 
@@ -501,8 +497,7 @@ class State<T> {
   List<ParseError> get errors => _buildErrors();
 
   @pragma('vm:prefer-inline')
-  void fail(int pos, int kind, Object? value,
-      {int length = -1, int start = -1}) {
+  void fail(int pos, int kind, [Object? value, int start = -1, int end = -1]) {
     ok = false;
     if (log) {
       if (errorPos <= pos && minErrorPos <= pos) {
@@ -511,8 +506,8 @@ class State<T> {
           _length = 0;
         }
 
+        _ends[_length] = end;
         _kinds[_length] = kind;
-        _lengths[_length] = length;
         _starts[_length] = start;
         _values[_length] = value;
         _length++;
@@ -556,36 +551,19 @@ class State<T> {
   }
 
   List<ParseError> _buildErrors() {
-    int max(int x, int y) => x > y ? x : y;
-
-    int min(int x, int y) => x < y ? x : y;
-
-    int getStart(int index) {
-      var start = _starts[index];
+    var start = 0;
+    var end = 0;
+    void calculate(int index) {
+      start = _starts[index];
       if (start < 0) {
         start = errorPos;
+        end = start;
+      } else {
+        end = _ends[index];
+        if (end < start) {
+          end = start;
+        }
       }
-
-      start = min(start, errorPos);
-      return start;
-    }
-
-    int getEnd(int index) {
-      start = getStart(index);
-      var end = _starts[index];
-      if (end < 0) {
-        end = errorPos;
-      }
-
-      end = max(end, errorPos);
-      end = max(end, start);
-      start = min(start, end);
-      final length = _lengths[index];
-      if (length >= 0) {
-        end = start + length;
-      }
-
-      return end;
     }
 
     final result = <ParseError>[];
@@ -593,8 +571,8 @@ class State<T> {
     for (var i = 0; i < _length; i++) {
       final kind = _kinds[i];
       if (kind == ParseError.expected) {
+        calculate(i);
         final value = _values[i];
-        final start = getStart(i);
         var list = expected[start];
         if (list == null) {
           list = [];
@@ -607,14 +585,13 @@ class State<T> {
 
     for (final start in expected.keys) {
       final values = expected[start]!.toSet().map((e) => _escape(e));
-      final text = 'Expected: ${values.join(', ')}';
+      final text = 'Expecting: ${values.join(', ')}';
       final error = ParseError(start, start, text);
       result.add(error);
     }
 
     for (var i = 0; i < _length; i++) {
-      final start = getStart(i);
-      final end = getEnd(i);
+      calculate(i);
       final value = _values[i];
       final kind = _kinds[i];
       switch (kind) {
@@ -689,6 +666,8 @@ class State<T> {
 
     return result;
   }
+
+  static T as<T>(T? value) => value as T;
 }
 
 class _StateContext {
