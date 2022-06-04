@@ -2,7 +2,7 @@
 
 Classic non-configurable CSV parser suitable for most use cases. Pretty fast parsing.
 
-Version: 0.1.43
+Version: 0.1.44
 
 This software also demonstrates in practice how you can generate high-performance parsers with minimal memory consumption using [`parser_builder`](https://pub.dev/packages/parser_builder).  
 Creating a fast parser is very easy.  
@@ -38,6 +38,7 @@ Below is the source code for the parser definition.
 ```dart
 import 'package:parser_builder/branch.dart';
 import 'package:parser_builder/bytes.dart';
+import 'package:parser_builder/capture.dart';
 import 'package:parser_builder/char_class.dart';
 import 'package:parser_builder/character.dart';
 import 'package:parser_builder/combinator.dart';
@@ -107,14 +108,17 @@ const _rows =
 
 const _string = Named<String, String>(
     '_string',
-    WithStartAndLastErrorPos(
+    HandleLastErrorPos(
       Map3(
-          _openQuote,
+          CaptureStart('start', _openQuote),
           _chars,
           Alt2(
             _closeQuote,
             FailMessage(
-                StatePos.lastErrorPos, 'Unterminated string', StatePos.start),
+              LastErrorPositionAction(),
+              'Unterminated string',
+              CapturedValueAction('start'),
+            ),
           ),
           ExpressionAction<String>(['v'], 'String.fromCharCodes({{v}})')),
     ));
