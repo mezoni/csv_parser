@@ -1,3 +1,7 @@
+## 0.1.44
+
+- The parsers has been rebuilt using the new version of `parser_builder`
+
 ## 0.1.43
 
 - The parsers has been rebuilt using the new version of `parser_builder`

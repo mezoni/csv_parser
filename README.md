@@ -213,19 +213,19 @@ test_csv\zillow.csv
 ---------------
 Parse in loop by 5 times:
 Results:
-Time passed: 0.000, Test 'csv': 3127.011 ms
-Time passed: 3.129, Test 'fast_csv_ex': 724.131 ms
-Time passed: 3.853, Test 'fast_csv': 656.715 ms
-Time passed: 4.510, Test 'csv': 3125.168 ms
-Time passed: 7.635, Test 'fast_csv_ex': 680.121 ms
-Time passed: 8.315, Test 'fast_csv': 654.836 ms
-Time passed: 8.970, Test 'csv': 3108.306 ms
-Time passed: 12.078, Test 'fast_csv_ex': 669.119 ms
-Time passed: 12.748, Test 'fast_csv': 658.143 ms
-Time passed: 13.406, Test 'csv': 3091.034 ms
-Time passed: 16.497, Test 'fast_csv_ex': 673.975 ms
-Time passed: 17.171, Test 'fast_csv': 654.392 ms
-Time passed: 17.825, Test 'csv': 3120.856 ms
-Time passed: 20.946, Test 'fast_csv_ex': 683.729 ms
-Time passed: 21.630, Test 'fast_csv': 656.846 ms
+Time passed: 0.000, Test 'csv': 3199.698 ms
+Time passed: 3.201, Test 'fast_csv_ex': 716.086 ms
+Time passed: 3.918, Test 'fast_csv': 657.902 ms
+Time passed: 4.576, Test 'csv': 3150.602 ms
+Time passed: 7.726, Test 'fast_csv_ex': 676.806 ms
+Time passed: 8.403, Test 'fast_csv': 619.863 ms
+Time passed: 9.023, Test 'csv': 3078.311 ms
+Time passed: 12.101, Test 'fast_csv_ex': 665.94 ms
+Time passed: 12.767, Test 'fast_csv': 627.519 ms
+Time passed: 13.395, Test 'csv': 3115.084 ms
+Time passed: 16.510, Test 'fast_csv_ex': 642.749 ms
+Time passed: 17.153, Test 'fast_csv': 631.688 ms
+Time passed: 17.785, Test 'csv': 3127.335 ms
+Time passed: 20.912, Test 'fast_csv_ex': 639.988 ms
+Time passed: 21.552, Test 'fast_csv': 618.683 ms
 ```

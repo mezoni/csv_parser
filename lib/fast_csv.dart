@@ -34,8 +34,8 @@ void _ws(State<String> state) {
 
 void _quote(State<String> state) {
   final source = state.source;
-  state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 34;
-  if (state.ok) {
+  if (state.pos < source.length && source.codeUnitAt(state.pos) == 34) {
+    state.ok = true;
     state.pos += 1;
   } else {
     state.fail(state.pos, ParseError.expected, '"');
@@ -59,25 +59,24 @@ List<int>? _chars(State<String> state) {
   final $list = <int>[];
   while (true) {
     int? $1;
-    state.ok = state.pos < source.length;
-    if (state.ok) {
-      final pos = state.pos;
+    final $pos = state.pos;
+    if ($pos < source.length) {
       final c = source.readRune(state);
       state.ok = c != 34;
       if (state.ok) {
         $1 = c;
       } else {
-        state.pos = pos;
-        state.fail(state.pos, ParseError.character);
+        state.pos = $pos;
+        state.fail($pos, ParseError.character);
       }
     } else {
-      state.fail(state.pos, ParseError.character);
+      state.fail($pos, ParseError.character);
     }
     if (!state.ok) {
-      state.ok = state.pos + 1 < source.length &&
+      if (state.pos + 1 < source.length &&
           source.codeUnitAt(state.pos) == 34 &&
-          source.codeUnitAt(state.pos + 1) == 34;
-      if (state.ok) {
+          source.codeUnitAt(state.pos + 1) == 34) {
+        state.ok = true;
         state.pos += 2;
       } else {
         state.fail(state.pos, ParseError.expected, '""');
@@ -123,7 +122,7 @@ String? _string(State<String> state) {
       _closeQuote(state);
       if (!state.ok) {
         state.fail(state.lastErrorPos, ParseError.message,
-            'Unterminated string', State.as<int>($start));
+            'Unterminated string', $start.as());
       }
       if (state.ok) {
         final v1 = $1!;
@@ -181,8 +180,8 @@ List<String>? _row(State<String> state) {
     }
     $list.add($1!);
     $pos = state.pos;
-    state.ok = state.pos < source.length && source.codeUnitAt(state.pos) == 44;
-    if (state.ok) {
+    if (state.pos < source.length && source.codeUnitAt(state.pos) == 44) {
+      state.ok = true;
       state.pos += 1;
     } else {
       state.fail(state.pos, ParseError.expected, ',');
@@ -200,16 +199,15 @@ List<String>? _row(State<String> state) {
 
 void _eol(State<String> state) {
   final source = state.source;
-  state.ok = state.pos < source.length;
-  if (state.ok) {
-    final pos = state.pos;
-    final c = source.codeUnitAt(pos);
-    state.ok = false;
+  state.ok = false;
+  if (state.pos < source.length) {
+    final $pos = state.pos;
+    final c = source.codeUnitAt($pos);
     if (c == 10) {
       state.ok = true;
       state.pos += 1;
     } else if (c == 13) {
-      if (source.startsWith('\r\n', pos)) {
+      if (source.startsWith('\r\n', $pos)) {
         state.ok = true;
         state.pos += 2;
       } else {
@@ -369,6 +367,12 @@ String _errorMessage(String source, List<ParseError> errors) {
   }
 
   return sb.toString();
+}
+
+extension on Object {
+  @pragma('vm:prefer-inline')
+  // ignore: unused_element
+  R as<R>() => this as R;
 }
 
 extension on String {
@@ -553,7 +557,7 @@ class State<T> {
     }
 
     final result = <ParseError>[];
-    final expected = <int, List>{};
+    final expected = <int, List<Object?>>{};
     for (var i = 0; i < _length; i++) {
       final kind = _kinds[i];
       if (kind == ParseError.expected) {
@@ -570,7 +574,7 @@ class State<T> {
     }
 
     for (final start in expected.keys) {
-      final values = expected[start]!.toSet().map((e) => _escape(e));
+      final values = expected[start]!.toSet().map(_escape);
       final text = 'Expecting: ${values.join(', ')}';
       final error = ParseError(start, start, text);
       result.add(error);
@@ -652,6 +656,4 @@ class State<T> {
 
     return result;
   }
-
-  static T as<T>(T? value) => value as T;
 }
