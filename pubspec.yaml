@@ -6,5 +6,4 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 dev_dependencies:
   lints: '>=1.0.0 <3.0.0'
-  parser_builder_lite: {path: ../parser_builder_lite}
   test: ^1.20.1

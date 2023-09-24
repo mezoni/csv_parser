@@ -4,6 +4,12 @@ Classic CSV parsers suitable for most use cases. Pretty fast parsing.
 
 Version: 0.2.0
 
+[![Pub Package](https://img.shields.io/pub/v/fast_csv.svg)](https://pub.dev/packages/fast_csv)
+[![GitHub Issues](https://img.shields.io/github/issues/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/issues)
+[![GitHub Forks](https://img.shields.io/github/forks/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/forks)
+[![GitHub Stars](https://img.shields.io/github/stars/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/stargazers)
+[![GitHub License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://raw.githubusercontent.com/mezoni/csv_parser/main/LICENSE)
+
 ## Example of the parser usage
 
 ```dart
@@ -30,6 +36,7 @@ const _csv = '''
 ## About the implementation of parsers
 
 Parsers are generated from PEG grammars.  
+Software used to generate parsers [![Pub Package](https://img.shields.io/pub/v/peg.svg)](https://pub.dev/packages/peg)  
 Below is the source code for one of the grammars.
 
 ```
