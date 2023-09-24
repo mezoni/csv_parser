@@ -1,0 +1,41 @@
+%%
+
+const CsvParser();
+
+%%
+
+Start = v:Rows Eof ;
+
+@inline
+Chars = ($[^"]+ / '""' <String>{ $$ = '"'; })* ;
+
+@inline
+CloseQuote = '"' Spaces ;
+
+@inline
+Eof = !. ;
+
+@inline
+Eol = '\n' / '\r\n' / '\r' ;
+
+@event
+@inline
+Field = String / Text ;
+
+@inline
+OpenQuote = Spaces '"' ;
+
+@inline
+RowEnding = Eol !Eof ;
+
+@event
+Row = @sepBy(Field, ',') ;
+
+Rows = v:@sepBy(Row, RowEnding) Eol? ;
+
+Spaces = [ \t]* ;
+
+String
+String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
+
+Text = $[^,"\n\r]* ;

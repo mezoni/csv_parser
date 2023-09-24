@@ -1,3 +1,7 @@
+## 0.2.0
+
+- The parsers have been recreated using PEG grammars.
+
 ## 0.1.44
 
 - The parsers has been rebuilt using the new version of `parser_builder`

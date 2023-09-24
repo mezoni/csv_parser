@@ -1,7 +1,7 @@
-import 'package:fast_csv/fast_csv.dart' as _fast_csv;
+import 'package:fast_csv/fast_csv.dart' as fast_csv;
 
 void main(List<String> args) {
-  final result = _fast_csv.parse(_csv);
+  final result = fast_csv.parse(_csv);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];

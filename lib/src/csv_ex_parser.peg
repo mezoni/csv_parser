@@ -1,0 +1,53 @@
+%%
+
+final String separator;
+
+final int separatorChar;
+
+const CsvExParser({
+  required this.separator,
+  required this.separatorChar,
+});
+
+%%
+
+Start = v:Rows Eof ;
+
+@inline
+Chars = ($[^"]+ / '""' <String>{ $$ = '"'; })* ;
+
+@inline
+CloseQuote = '"' Spaces ;
+
+@inline
+Eof = !. ;
+
+@inline
+Eol = [\n\r] / '\r\n';
+
+@event
+Field = String / Text ;
+
+@inline
+OpenQuote = Spaces '"' ;
+
+@inline
+RowEnding = Eol !Eof ;
+
+@event
+Row = @sepBy(Field, Sep) ;
+
+Rows = v:@sepBy(Row, RowEnding) Eol? ;
+
+@inline
+Sep = @matchString({ separator }) ;
+
+Spaces = [ \t]* ;
+
+String
+String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
+
+Text = $TextChar* ;
+
+@inline
+TextChar = @verify([^"\n\r], { if ($$ == separatorChar) { error = ErrorUnexpectedCharacter(); } }) ;
