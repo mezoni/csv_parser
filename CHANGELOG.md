@@ -1,10 +1,7 @@
-## 0.3.1
-
-- Added an example of streaming parsing of 1 000 000 rows.
-
-## 0.3.0
+## 0.2.1
 
 - Added experimental support for event-based streaming parsing.
+- Added an example of streaming parsing of 1 000 000 rows.
 
 ## 0.2.0
 
