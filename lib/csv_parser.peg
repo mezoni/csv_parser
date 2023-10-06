@@ -1,16 +1,10 @@
 %%
 
-final String separator;
-
-final int separatorChar;
-
-const CsvExParser({
-  required this.separator,
-  required this.separatorChar,
-});
+const CsvParser();
 
 %%
 
+@event
 Start = v:Rows Eof ;
 
 @inline
@@ -22,10 +16,10 @@ CloseQuote = '"' Spaces ;
 @inline
 Eof = !. ;
 
-@inline
-Eol = [\n\r] / '\r\n';
+Eol = '\n' / '\r\n' / '\r' ;
 
 @event
+@inline
 Field = String / Text ;
 
 @inline
@@ -35,19 +29,13 @@ OpenQuote = Spaces '"' ;
 RowEnding = Eol !Eof ;
 
 @event
-Row = @sepBy(Field, Sep) ;
+Row = @sepBy(Field, ',') ;
 
 Rows = v:@sepBy(Row, RowEnding) Eol? ;
-
-@inline
-Sep = @matchString({ separator }) ;
 
 Spaces = [ \t]* ;
 
 String
 String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
 
-Text = $TextChar* ;
-
-@inline
-TextChar = @verify([^"\n\r], { if ($$ == separatorChar) { error = ErrorUnexpectedCharacter(); } }) ;
+Text = $[^,"\n\r]* ;

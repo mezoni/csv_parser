@@ -5,8 +5,8 @@ import 'dart:io';
 Future<void> main(List<String> args) async {
   final exitCodes = <Future<int>>[];
   const files = [
-    'lib/src/csv_parser.peg',
-    'lib/src/csv_ex_parser.peg',
+    'lib/csv_parser.peg',
+    'lib/csv_ex_parser.peg',
   ];
   final process = await Process.start(Platform.executable, [
     'pub',
@@ -27,6 +27,7 @@ Future<void> main(List<String> args) async {
       'global',
       'run',
       'peg',
+      '--async',
       file,
     ]);
     unawaited(process.stdout.transform(utf8.decoder).forEach(print));
