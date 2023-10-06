@@ -21,7 +21,7 @@ Stream<String> _createStream() {
   const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
   const rowsInChunk = count ~/ 100;
   final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
-  print('Total data amount ${chunk.length * rowsInChunk} code units.');
+  print('Total data amount ${row.length * count} code units.');
   print('The data will arrive in ${chunk.length} code unit chunks.');
   var i = 0;
   Timer.periodic(Duration.zero, (timer) {
@@ -111,7 +111,7 @@ class _MyParser extends CsvParser {
         case CsvParserEvent.rowEvent:
           final row = result as List<String>;
           _rows.add(row);
-          if (_rows.length > 5000) {
+          if (_rows.length > 10000) {
             saveRows(false);
           }
 

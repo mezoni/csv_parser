@@ -2,7 +2,7 @@
 
 Classic CSV parsers suitable for most use cases. Pretty fast parsing. With experimental event-based streaming parsing.
 
-Version: 0.2.2
+Version: 0.2.3
 
 [![Pub Package](https://img.shields.io/pub/v/fast_csv.svg)](https://pub.dev/packages/fast_csv)
 [![GitHub Issues](https://img.shields.io/github/issues/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/issues)
@@ -12,7 +12,7 @@ Version: 0.2.2
 
 ## Example of the parser usage
 
-An example of a simple way to parse 5300000K (5300M) code units of string data in chunks using events without consuming a lot of memory (during parsing) and simultaneously saving this parsed data into a virtual database (by a certain number of rows per transaction).
+An example of a simple way to parse 1000K rows (53M UTF-16 code units) in chunks (by ~0.53M UTF-16 code units) using events without consuming a lot of memory (during parsing) and simultaneously saving this parsed data into a virtual database (by 10K rows per transaction).
 
 ```dart
 import 'dart:async';
@@ -38,7 +38,7 @@ Stream<String> _createStream() {
   const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
   const rowsInChunk = count ~/ 100;
   final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
-  print('Total data amount ${chunk.length * rowsInChunk} code units.');
+  print('Total data amount ${row.length * count} code units.');
   print('The data will arrive in ${chunk.length} code unit chunks.');
   var i = 0;
   Timer.periodic(Duration.zero, (timer) {
@@ -128,7 +128,7 @@ class _MyParser extends CsvParser {
         case CsvParserEvent.rowEvent:
           final row = result as List<String>;
           _rows.add(row);
-          if (_rows.length > 5000) {
+          if (_rows.length > 10000) {
             saveRows(false);
           }
 
@@ -172,22 +172,22 @@ Chevy 4900.0
 Jeep 4799.0
 =========================
 Start streaming parsing with events
-Total data amount 5299990000 code units.
+Total data amount 52000000 code units.
 The data will arrive in 529999 code unit chunks.
 Start saving to virtual database
-Saved to virtual database 100020 row(s) in 20 transaction(s)
-Saved to virtual database 200040 row(s) in 40 transaction(s)
-Saved to virtual database 300060 row(s) in 60 transaction(s)
-Saved to virtual database 400080 row(s) in 80 transaction(s)
-Saved to virtual database 500100 row(s) in 100 transaction(s)
-Saved to virtual database 600120 row(s) in 120 transaction(s)
-Saved to virtual database 700140 row(s) in 140 transaction(s)
-Saved to virtual database 800160 row(s) in 160 transaction(s)
-Saved to virtual database 900180 row(s) in 180 transaction(s)
-Saving to virtual database complete in 0:00:04.634083
+Saved to virtual database 100010 row(s) in 10 transaction(s)
+Saved to virtual database 200020 row(s) in 20 transaction(s)
+Saved to virtual database 300030 row(s) in 30 transaction(s)
+Saved to virtual database 400040 row(s) in 40 transaction(s)
+Saved to virtual database 500050 row(s) in 50 transaction(s)
+Saved to virtual database 600060 row(s) in 60 transaction(s)
+Saved to virtual database 700070 row(s) in 70 transaction(s)
+Saved to virtual database 800080 row(s) in 80 transaction(s)
+Saved to virtual database 900090 row(s) in 90 transaction(s)
+Saving to virtual database complete in 0:00:04.048166
 Max buffer load: 530053 code units
-Saved to virtual database 1000000 row(s) in 200 transaction(s)
-Totally saved to virtual database 1000000 row(s) in 200 transaction(s)
+Saved to virtual database 1000000 row(s) in 100 transaction(s)
+Totally saved to virtual database 1000000 row(s) in 100 transaction(s)
 ```
 
 ## About the implementation of parsers

@@ -1,6 +1,11 @@
 ## 0.2.2
 
 - Changes to example file `example/example.dart`.
+- Changes to file `README.md`.
+
+## 0.2.2
+
+- Changes to example file `example/example.dart`.
 
 ## 0.2.1
 
