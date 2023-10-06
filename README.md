@@ -162,7 +162,6 @@ class _MyParser extends CsvParser {
 Output:
 
 ```
-Connecting to VM Service at ws://127.0.0.1:33457/Tg3FWVv8yZI=/ws
 [1997, Ford, E350, ac, "abs", moon, 3000.00]
 [1999, Chevy, Venture В«Extended EditionВ», , 4900.00]
 [1996, Jeep, Grand Cherokee, MUST SELL! air, moon roof, loaded, 4799.00]
@@ -265,34 +264,6 @@ const _csv = '''
 1999;Chevy;"Venture В«Extended EditionВ»";"";4900.00
 1996;Jeep;Grand Cherokee;"MUST SELL! air, moon roof, loaded";4799.00
 ''';
-```
-
-Output:
-
-```
-[1997, Ford, E350, ac, "abs", moon, 3000.00]
-[1999, Chevy, Venture В«Extended EditionВ», , 4900.00]
-[1996, Jeep, Grand Cherokee, MUST SELL! air, moon roof, loaded, 4799.00]
-Ford 3000.0
-Chevy 4900.0
-Jeep 4799.0
-=========================
-Start streaming parsing
-The data will arrive in 529999 code units chunks.
-Start saving to database
-Saved to database 100020 row(s) in 20 transaction(s)
-Saved to database 200040 row(s) in 40 transaction(s)
-Saved to database 300060 row(s) in 60 transaction(s)
-Saved to database 400080 row(s) in 80 transaction(s)
-Saved to database 500100 row(s) in 100 transaction(s)
-Saved to database 600120 row(s) in 120 transaction(s)
-Saved to database 700140 row(s) in 140 transaction(s)
-Saved to database 800160 row(s) in 160 transaction(s)
-Saved to database 900180 row(s) in 180 transaction(s)
-Saving to database complete in 0:00:04.015126
-Max buffer load: 530053 code units
-Saved to database 1000000 row(s) in 200 transaction(s)
-Totally saved to database 1000000 row(s) in 200 transaction(s)
 ```
 
 ## About the implementation of parsers
