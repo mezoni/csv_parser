@@ -12,6 +12,8 @@ Version: 0.2.1
 
 ## Example of the parser usage
 
+An example of a simple way to parse 5300000K (5300M) code units of string data in chunks using events without consuming a lot of memory (during parsing) and simultaneously saving this parsed data into a virtual database (by a certain number of rows per transaction).
+
 ```dart
 import 'dart:async';
 
