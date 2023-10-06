@@ -132,6 +132,8 @@ class _MyParser extends CsvParser {
             saveRows(false);
           }
 
+          // Free memory
+          result = const <String>[] as R;
           break;
         case CsvParserEvent.startEvent:
           saveRows(true);
