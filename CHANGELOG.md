@@ -1,4 +1,4 @@
-## 0.2.2
+## 0.2.3
 
 - Changes to example file `example/example.dart`.
 - Changes to file `README.md`.
