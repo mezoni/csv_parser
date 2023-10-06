@@ -17,8 +17,8 @@ An example of a simple way to parse 1000K rows (53M UTF-16 code units) in chunks
 ```dart
 import 'dart:async';
 
+import 'package:fast_csv/csv_converter.dart';
 import 'package:fast_csv/csv_parser.dart';
-import 'package:fast_csv/fast_csv.dart' as fast_csv;
 
 Future<void> main(List<String> args) async {
   _exampleParseString();
@@ -62,29 +62,20 @@ Future<void> _exampleParseStreamWithEvents() async {
   print('Start streaming parsing with events');
   // Get external data
   final stream = _createStream();
-  final parser = _MyParser();
-  final completer = Completer<void>();
   final sw = Stopwatch();
   sw.start();
-  print('Start saving to virtual database');
-  final input = parseAsync(parser.parseStart$Async, (result) {
-    sw.stop();
+  final parser = _MyParser(() async {
     print('Saving to virtual database complete in ${sw.elapsed}');
-    try {
-      final input = result.input;
-      print('Max buffer load: ${input.bufferLoad} code units');
-      result.getResult();
-      completer.complete();
-    } catch (e, s) {
-      completer.completeError(e, s);
-    }
+    sw.stop();
   });
-  stream.listen(input.add, onDone: input.close);
-  return completer.future;
+
+  await stream.transform(FastCsvConverter(parser: parser)).first;
 }
 
 void _exampleParseString() {
-  final result = fast_csv.parse(_csv);
+  print('=========================');
+  print('Parsing string');
+  final result = FastCsvConverter().convert(_csv);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];
@@ -94,6 +85,8 @@ void _exampleParseString() {
 }
 
 class _MyParser extends CsvParser {
+  final Future<void> Function()? onComplete;
+
   int _count = 0;
 
   int _totalCount = 0;
@@ -101,6 +94,8 @@ class _MyParser extends CsvParser {
   int _transactionCount = 0;
 
   final List<List<String>> _rows = [];
+
+  _MyParser([this.onComplete]);
 
   @override
   void beginEvent(CsvParserEvent event) {
@@ -137,6 +132,10 @@ class _MyParser extends CsvParser {
           break;
         case CsvParserEvent.startEvent:
           saveRows(true);
+          if (onComplete != null) {
+            Timer.run(onComplete!);
+          }
+
         default:
       }
     }
@@ -166,6 +165,8 @@ class _MyParser extends CsvParser {
 Output:
 
 ```
+=========================
+Parsing string
 [1997, Ford, E350, ac, "abs", moon, 3000.00]
 [1999, Chevy, Venture В«Extended EditionВ», , 4900.00]
 [1996, Jeep, Grand Cherokee, MUST SELL! air, moon roof, loaded, 4799.00]
@@ -176,7 +177,6 @@ Jeep 4799.0
 Start streaming parsing with events
 Total data amount 52000000 code units.
 The data will arrive in 529999 code unit chunks.
-Start saving to virtual database
 Saved to virtual database 100010 row(s) in 10 transaction(s)
 Saved to virtual database 200020 row(s) in 20 transaction(s)
 Saved to virtual database 300030 row(s) in 30 transaction(s)
@@ -186,10 +186,9 @@ Saved to virtual database 600060 row(s) in 60 transaction(s)
 Saved to virtual database 700070 row(s) in 70 transaction(s)
 Saved to virtual database 800080 row(s) in 80 transaction(s)
 Saved to virtual database 900090 row(s) in 90 transaction(s)
-Saving to virtual database complete in 0:00:04.048166
-Max buffer load: 530053 code units
 Saved to virtual database 1000000 row(s) in 100 transaction(s)
 Totally saved to virtual database 1000000 row(s) in 100 transaction(s)
+Saving to virtual database complete in 0:00:04.364904
 ```
 
 ## About the implementation of parsers

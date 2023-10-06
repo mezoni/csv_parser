@@ -1,7 +1,7 @@
 import 'dart:async';
 
+import 'package:fast_csv/csv_converter.dart';
 import 'package:fast_csv/csv_parser.dart';
-import 'package:fast_csv/fast_csv.dart' as fast_csv;
 
 Future<void> main(List<String> args) async {
   _exampleParseString();
@@ -45,29 +45,20 @@ Future<void> _exampleParseStreamWithEvents() async {
   print('Start streaming parsing with events');
   // Get external data
   final stream = _createStream();
-  final parser = _MyParser();
-  final completer = Completer<void>();
   final sw = Stopwatch();
   sw.start();
-  print('Start saving to virtual database');
-  final input = parseAsync(parser.parseStart$Async, (result) {
-    sw.stop();
+  final parser = _MyParser(() async {
     print('Saving to virtual database complete in ${sw.elapsed}');
-    try {
-      final input = result.input;
-      print('Max buffer load: ${input.bufferLoad} code units');
-      result.getResult();
-      completer.complete();
-    } catch (e, s) {
-      completer.completeError(e, s);
-    }
+    sw.stop();
   });
-  stream.listen(input.add, onDone: input.close);
-  return completer.future;
+
+  await stream.transform(FastCsvConverter(parser: parser)).first;
 }
 
 void _exampleParseString() {
-  final result = fast_csv.parse(_csv);
+  print('=========================');
+  print('Parsing string');
+  final result = FastCsvConverter().convert(_csv);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];
@@ -77,6 +68,8 @@ void _exampleParseString() {
 }
 
 class _MyParser extends CsvParser {
+  final Future<void> Function()? onComplete;
+
   int _count = 0;
 
   int _totalCount = 0;
@@ -84,6 +77,8 @@ class _MyParser extends CsvParser {
   int _transactionCount = 0;
 
   final List<List<String>> _rows = [];
+
+  _MyParser([this.onComplete]);
 
   @override
   void beginEvent(CsvParserEvent event) {
@@ -120,6 +115,10 @@ class _MyParser extends CsvParser {
           break;
         case CsvParserEvent.startEvent:
           saveRows(true);
+          if (onComplete != null) {
+            Timer.run(onComplete!);
+          }
+
         default:
       }
     }

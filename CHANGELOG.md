@@ -2,6 +2,7 @@
 
 - Changes to example file `example/example.dart`.
 - Changes to file `README.md`.
+- Implemented converters `FastCsvConverter`, `FastCsvExConverter`.
 
 ## 0.2.3
 
