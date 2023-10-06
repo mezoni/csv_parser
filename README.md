@@ -320,31 +320,3 @@ String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
 Text = $[^,"\n\r]* ;
 
 ```
-
-## An example of using a configurable parser
-
-This parser is slightly slower than the non-configurable parser.  
-
-The difference between using a normal parser and using a configurable parser is that you can specify a field separator.  
-Any value (such as a space or semicolon).
-
-```dart
-import 'package:fast_csv/fast_csv_ex.dart' as fast_csv_ex;
-
-void main(List<String> args) {
-  final result = fast_csv_ex.parse(_csv, separator: ';');
-  print(result.join('\n'));
-  for (final row in result) {
-    final car = row[1];
-    final price = num.parse(row[4]);
-    print('$car $price');
-  }
-}
-
-const _csv = '''
-1997;Ford;E350;"ac, ""abs"", moon";3000.00
-1999;Chevy;"Venture В«Extended EditionВ»";"";4900.00
-1996;Jeep;Grand Cherokee;"MUST SELL! air, moon roof, loaded";4799.00
-''';
-
-```
