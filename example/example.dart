@@ -27,7 +27,7 @@ Stream<String> _createStream() {
   Timer.periodic(Duration.zero, (timer) {
     sink.add(chunk);
     i += rowsInChunk;
-    if (i <= count) {
+    if (i < count) {
       sink.add('\n');
     }
 
