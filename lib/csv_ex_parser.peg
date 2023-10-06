@@ -1,13 +1,18 @@
 %%
 
-final String separator;
+  final String _separator;
 
-final int separatorChar;
+  final int _separatorChar;
 
-const CsvExParser({
-  required this.separator,
-  required this.separatorChar,
-});
+  CsvExParser({
+    String separator = ',',
+  })  : _separator = separator.isEmpty
+            ? throw ArgumentError('Must not be empty', 'separator')
+            : separator,
+        _separatorChar = separator.runes.length != 1
+            ? throw ArgumentError.value(separator, 'separator',
+                'The length of the separator must be one character')
+            : separator.runes.first;
 
 %%
 
@@ -40,7 +45,7 @@ Row = @sepBy(Field, Sep) ;
 Rows = v:@sepBy(Row, RowEnding) Eol? ;
 
 @inline
-Sep = @matchString({ separator }) ;
+Sep = @matchString({ _separator }) ;
 
 Spaces = [ \t]* ;
 
@@ -50,4 +55,4 @@ String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
 Text = $TextChar* ;
 
 @inline
-TextChar = @verify([^"\n\r], { if ($$ == separatorChar) { error = ErrorUnexpectedCharacter(); } }) ;
+TextChar = @verify([^"\n\r], { if ($$ == _separatorChar) { error = ErrorUnexpectedCharacter(); } }) ;

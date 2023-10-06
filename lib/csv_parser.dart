@@ -61,14 +61,15 @@ class CsvParser {
             break;
           case 2:
             final $3 = state.input;
-            if (state.pos + 1 >= $3.end && !$3.isClosed) {
+            if (state.pos + 1 < $3.end || $3.isClosed) {
+              matchLiteral1Async(
+                  state, 10, '\n', const ErrorExpectedTags(['\n']));
+              $3.endBuffering(state.pos);
+            } else {
               $3.sleep = true;
               $3.handle = $2;
               return;
             }
-            matchLiteral1Async(
-                state, 10, '\n', const ErrorExpectedTags(['\n']));
-            $3.endBuffering(state.pos);
             if (state.ok) {
               $1 = 1;
               break;
@@ -80,14 +81,16 @@ class CsvParser {
             break;
           case 3:
             final $4 = state.input;
-            if (state.pos + 1 >= $4.end && !$4.isClosed) {
+            if (state.pos + 1 < $4.end || $4.isClosed) {
+              const string = '\r\n';
+              matchLiteralAsync(
+                  state, string, const ErrorExpectedTags([string]));
+              $4.endBuffering(state.pos);
+            } else {
               $4.sleep = true;
               $4.handle = $2;
               return;
             }
-            const string = '\r\n';
-            matchLiteralAsync(state, string, const ErrorExpectedTags([string]));
-            $4.endBuffering(state.pos);
             if (state.ok) {
               $1 = 1;
               break;
@@ -99,14 +102,15 @@ class CsvParser {
             break;
           case 4:
             final $5 = state.input;
-            if (state.pos + 1 >= $5.end && !$5.isClosed) {
+            if (state.pos + 1 < $5.end || $5.isClosed) {
+              matchLiteral1Async(
+                  state, 13, '\r', const ErrorExpectedTags(['\r']));
+              $5.endBuffering(state.pos);
+            } else {
               $5.sleep = true;
               $5.handle = $2;
               return;
             }
-            matchLiteral1Async(
-                state, 13, '\r', const ErrorExpectedTags(['\r']));
-            $5.endBuffering(state.pos);
             $1 = 1;
             break;
           case 1:
@@ -160,29 +164,29 @@ class CsvParser {
             break;
           case 1:
             final $3 = state.input;
-            if (state.pos + 1 >= $3.end && !$3.isClosed) {
+            if (state.pos + 1 < $3.end || $3.isClosed) {
+              state.ok = state.pos < $3.end;
+              if (state.pos >= $3.start) {
+                if (state.ok) {
+                  final c = $3.data.runeAt(state.pos - $3.start);
+                  state.ok = c == 9 || c == 32;
+                  if (state.ok) {
+                    state.pos += c > 0xffff ? 2 : 1;
+                  } else {
+                    state.fail(const ErrorUnexpectedCharacter());
+                  }
+                } else {
+                  state.fail(const ErrorUnexpectedEndOfInput());
+                }
+              } else {
+                state.fail(ErrorBacktracking(state.pos));
+              }
+              $3.endBuffering(state.pos);
+            } else {
               $3.sleep = true;
               $3.handle = $2;
               return;
             }
-
-            state.ok = state.pos < $3.end;
-            if (state.pos >= $3.start) {
-              if (state.ok) {
-                final c = $3.data.runeAt(state.pos - $3.start);
-                state.ok = c == 9 || c == 32;
-                if (state.ok) {
-                  state.pos += c > 0xffff ? 2 : 1;
-                } else {
-                  state.fail(const ErrorUnexpectedCharacter());
-                }
-              } else {
-                state.fail(const ErrorUnexpectedEndOfInput());
-              }
-            } else {
-              state.fail(ErrorBacktracking(state.pos));
-            }
-            $3.endBuffering(state.pos);
             state.input.endBuffering(state.pos);
             if (!state.ok) {
               $1 = 2;
@@ -349,13 +353,15 @@ class CsvParser {
             break;
           case 6:
             final $10 = state.input;
-            if (state.pos + 1 >= $10.end && !$10.isClosed) {
+            if (state.pos + 1 < $10.end || $10.isClosed) {
+              matchLiteral1Async(
+                  state, 44, ',', const ErrorExpectedTags([',']));
+              $10.endBuffering(state.pos);
+            } else {
               $10.sleep = true;
               $10.handle = $2;
               return;
             }
-            matchLiteral1Async(state, 44, ',', const ErrorExpectedTags([',']));
-            $10.endBuffering(state.pos);
             if (!state.ok) {
               state.input.endBuffering(state.pos);
               $1 = 1;
@@ -1042,13 +1048,15 @@ class CsvParser {
             break;
           case 4:
             final $9 = state.input;
-            if (state.pos + 1 >= $9.end && !$9.isClosed) {
+            if (state.pos + 1 < $9.end || $9.isClosed) {
+              matchLiteral1Async(
+                  state, 34, '"', const ErrorExpectedTags(['"']));
+              $9.endBuffering(state.pos);
+            } else {
               $9.sleep = true;
               $9.handle = $2;
               return;
             }
-            matchLiteral1Async(state, 34, '"', const ErrorExpectedTags(['"']));
-            $9.endBuffering(state.pos);
             if (!state.ok) {
               state.pos = $6!;
               $1 = 2;
@@ -1092,29 +1100,29 @@ class CsvParser {
             break;
           case 8:
             final $14 = state.input;
-            if (state.pos + 1 >= $14.end && !$14.isClosed) {
+            if (state.pos + 1 < $14.end || $14.isClosed) {
+              state.ok = state.pos < $14.end;
+              if (state.pos >= $14.start) {
+                if (state.ok) {
+                  final c = $14.data.runeAt(state.pos - $14.start);
+                  state.ok = c != 34;
+                  if (state.ok) {
+                    state.pos += c > 0xffff ? 2 : 1;
+                  } else {
+                    state.fail(const ErrorUnexpectedCharacter());
+                  }
+                } else {
+                  state.fail(const ErrorUnexpectedEndOfInput());
+                }
+              } else {
+                state.fail(ErrorBacktracking(state.pos));
+              }
+              $14.endBuffering(state.pos);
+            } else {
               $14.sleep = true;
               $14.handle = $2;
               return;
             }
-
-            state.ok = state.pos < $14.end;
-            if (state.pos >= $14.start) {
-              if (state.ok) {
-                final c = $14.data.runeAt(state.pos - $14.start);
-                state.ok = c != 34;
-                if (state.ok) {
-                  state.pos += c > 0xffff ? 2 : 1;
-                } else {
-                  state.fail(const ErrorUnexpectedCharacter());
-                }
-              } else {
-                state.fail(const ErrorUnexpectedEndOfInput());
-              }
-            } else {
-              state.fail(ErrorBacktracking(state.pos));
-            }
-            $14.endBuffering(state.pos);
             state.input.endBuffering(state.pos);
             if (!state.ok) {
               $1 = 9;
@@ -1143,14 +1151,16 @@ class CsvParser {
             break;
           case 10:
             final $15 = state.input;
-            if (state.pos + 1 >= $15.end && !$15.isClosed) {
+            if (state.pos + 1 < $15.end || $15.isClosed) {
+              const string = '""';
+              matchLiteralAsync(
+                  state, string, const ErrorExpectedTags([string]));
+              $15.endBuffering(state.pos);
+            } else {
               $15.sleep = true;
               $15.handle = $2;
               return;
             }
-            const string = '""';
-            matchLiteralAsync(state, string, const ErrorExpectedTags([string]));
-            $15.endBuffering(state.pos);
             if (state.ok) {
               String? $$;
               $$ = '"';
@@ -1186,13 +1196,15 @@ class CsvParser {
             break;
           case 13:
             final $17 = state.input;
-            if (state.pos + 1 >= $17.end && !$17.isClosed) {
+            if (state.pos + 1 < $17.end || $17.isClosed) {
+              matchLiteral1Async(
+                  state, 34, '"', const ErrorExpectedTags(['"']));
+              $17.endBuffering(state.pos);
+            } else {
               $17.sleep = true;
               $17.handle = $2;
               return;
             }
-            matchLiteral1Async(state, 34, '"', const ErrorExpectedTags(['"']));
-            $17.endBuffering(state.pos);
             if (!state.ok) {
               $1 = 12;
               break;
@@ -1294,29 +1306,29 @@ class CsvParser {
             break;
           case 2:
             final $5 = state.input;
-            if (state.pos + 1 >= $5.end && !$5.isClosed) {
+            if (state.pos + 1 < $5.end || $5.isClosed) {
+              state.ok = state.pos < $5.end;
+              if (state.pos >= $5.start) {
+                if (state.ok) {
+                  final c = $5.data.runeAt(state.pos - $5.start);
+                  state.ok = !(c == 13 || c == 10 || c == 34 || c == 44);
+                  if (state.ok) {
+                    state.pos += c > 0xffff ? 2 : 1;
+                  } else {
+                    state.fail(const ErrorUnexpectedCharacter());
+                  }
+                } else {
+                  state.fail(const ErrorUnexpectedEndOfInput());
+                }
+              } else {
+                state.fail(ErrorBacktracking(state.pos));
+              }
+              $5.endBuffering(state.pos);
+            } else {
               $5.sleep = true;
               $5.handle = $2;
               return;
             }
-
-            state.ok = state.pos < $5.end;
-            if (state.pos >= $5.start) {
-              if (state.ok) {
-                final c = $5.data.runeAt(state.pos - $5.start);
-                state.ok = !(c == 13 || c == 10 || c == 34 || c == 44);
-                if (state.ok) {
-                  state.pos += c > 0xffff ? 2 : 1;
-                } else {
-                  state.fail(const ErrorUnexpectedCharacter());
-                }
-              } else {
-                state.fail(const ErrorUnexpectedEndOfInput());
-              }
-            } else {
-              state.fail(ErrorBacktracking(state.pos));
-            }
-            $5.endBuffering(state.pos);
             state.input.endBuffering(state.pos);
             if (!state.ok) {
               $1 = 3;

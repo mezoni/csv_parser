@@ -1,5 +1,7 @@
 import 'package:fast_csv/csv_ex_parser.dart';
 
+import 'csv_converter.dart';
+
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
 /// - The field separator is parsed as specified in the `separator` argument
@@ -8,20 +10,7 @@ import 'package:fast_csv/csv_ex_parser.dart';
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
 List<List<String>> parse(String source, {String separator = ','}) {
-  if (separator.isEmpty) {
-    throw ArgumentError('Must not be empty', 'separator');
-  }
-
-  final runes = separator.runes.toList();
-  if (runes.length != 1) {
-    throw ArgumentError.value(separator, 'separator',
-        'The length of the separator must be one character');
-  }
-
-  final parser = CsvExParser(
-    separator: separator,
-    separatorChar: runes[0],
-  );
-  final result = parseString(parser.parseStart, source);
+  final parser = CsvExParser(separator: separator);
+  final result = FastCsvExConverter(parser: parser).convert(source);
   return result;
 }

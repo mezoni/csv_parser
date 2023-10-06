@@ -3,6 +3,7 @@
 - Changes to example file `example/example.dart`.
 - Changes to file `README.md`.
 - Implemented converters `FastCsvConverter`, `FastCsvExConverter`.
+- Changes to grammar file `csv_ex_parser.peg`.
 
 ## 0.2.3
 

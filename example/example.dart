@@ -8,7 +8,7 @@ Future<void> main(List<String> args) async {
   await _exampleParseStreamWithEvents();
 }
 
-const _csv = '''
+const _data = '''
 1997,Ford,E350,"ac, ""abs"", moon",3000.00
 1999,Chevy,"Venture В«Extended EditionВ»","",4900.00
 1996,Jeep,Grand Cherokee,"MUST SELL! air, moon roof, loaded",4799.00''';
@@ -58,7 +58,7 @@ Future<void> _exampleParseStreamWithEvents() async {
 void _exampleParseString() {
   print('=========================');
   print('Parsing string');
-  final result = FastCsvConverter().convert(_csv);
+  final result = FastCsvConverter().convert(_data);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];

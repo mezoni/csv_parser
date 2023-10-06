@@ -41,8 +41,8 @@ class FastCsvExConverter with Converter<String, List<List<String>>> {
   final csv_ex_parser.CsvExParser parser;
 
   FastCsvExConverter({
-    required this.parser,
-  });
+    csv_ex_parser.CsvExParser? parser,
+  }) : parser = parser ?? csv_ex_parser.CsvExParser();
 
   @override
   List<List<String>> convert(String input) {

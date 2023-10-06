@@ -1,7 +1,9 @@
-import 'package:fast_csv/fast_csv_ex.dart' as fast_csv_ex;
+import 'package:fast_csv/csv_converter.dart';
+import 'package:fast_csv/csv_ex_parser.dart';
 
 void main(List<String> args) {
-  final result = fast_csv_ex.parse(_csv, separator: ';');
+  final parser = CsvExParser(separator: ';');
+  final result = FastCsvExConverter(parser: parser).convert(_data);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];
@@ -10,7 +12,7 @@ void main(List<String> args) {
   }
 }
 
-const _csv = '''
+const _data = '''
 1997;Ford;E350;"ac, ""abs"", moon";3000.00
 1999;Chevy;"Venture В«Extended EditionВ»";"";4900.00
 1996;Jeep;Grand Cherokee;"MUST SELL! air, moon roof, loaded";4799.00
