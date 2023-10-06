@@ -5,7 +5,7 @@ import 'package:fast_csv/fast_csv.dart' as fast_csv;
 
 Future<void> main(List<String> args) async {
   _exampleParseString();
-  await _exampleParseStream();
+  await _exampleParseStreamWithEvents();
 }
 
 const _csv = '''
@@ -40,9 +40,9 @@ Stream<String> _createStream() {
   return controller.stream;
 }
 
-Future<void> _exampleParseStream() async {
+Future<void> _exampleParseStreamWithEvents() async {
   print('=========================');
-  print('Start streaming parsing');
+  print('Start streaming parsing with events');
   // Get external data
   final stream = _createStream();
   final parser = _MyParser();

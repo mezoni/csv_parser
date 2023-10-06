@@ -20,7 +20,7 @@ import 'package:fast_csv/fast_csv.dart' as fast_csv;
 
 Future<void> main(List<String> args) async {
   _exampleParseString();
-  await _exampleParseStream();
+  await _exampleParseStreamWithEvents();
 }
 
 const _csv = '''
@@ -37,7 +37,7 @@ Stream<String> _createStream() {
   const rowsInChunk = count ~/ 100;
   final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
   print('Total data amount ${chunk.length * rowsInChunk} code units.');
-  print('The data will arrive in ${chunk.length} code units chunks.');
+  print('The data will arrive in ${chunk.length} code unit chunks.');
   var i = 0;
   Timer.periodic(Duration.zero, (timer) {
     sink.add(chunk);
@@ -55,9 +55,9 @@ Stream<String> _createStream() {
   return controller.stream;
 }
 
-Future<void> _exampleParseStream() async {
+Future<void> _exampleParseStreamWithEvents() async {
   print('=========================');
-  print('Start streaming parsing');
+  print('Start streaming parsing with events');
   // Get external data
   final stream = _createStream();
   final parser = _MyParser();
@@ -169,7 +169,7 @@ Ford 3000.0
 Chevy 4900.0
 Jeep 4799.0
 =========================
-Start streaming parsing
+Start streaming parsing with events
 Total data amount 5299990000 code units.
 The data will arrive in 529999 code unit chunks.
 Start saving to virtual database
