@@ -8,22 +8,21 @@ import 'csv_parser.dart' as csv_parser;
 /// If event-based parsing is required, then the corresponding parser instance
 /// (with event handlers) must be passed as a constructor argument.
 class FastCsvConverter with Converter<String, List<List<String>>> {
-  /// The corresponding parser instance.
-  final csv_parser.CsvParser parser;
+  final csv_parser.CsvParser _parser;
 
   FastCsvConverter({
-    this.parser = const csv_parser.CsvParser(),
-  });
+    csv_parser.CsvParser? parser,
+  }) : _parser = parser ?? const csv_parser.CsvParser();
 
   @override
   List<List<String>> convert(String input) {
-    final result = csv_parser.parseString(parser.parseStart, input);
+    final result = csv_parser.parseString(_parser.parseStart, input);
     return result;
   }
 
   @override
   Sink<String> startChunkedConversion(Sink<List<List<String>>> sink) {
-    final input = csv_parser.parseAsync(parser.parseStart$Async, (result) {
+    final input = csv_parser.parseAsync(_parser.parseStart$Async, (result) {
       final result2 = result.getResult();
       sink.add(result2);
     });
@@ -37,22 +36,21 @@ class FastCsvConverter with Converter<String, List<List<String>>> {
 /// If event-based parsing is required, the corresponding parser instances must
 /// have appropriate handlers.
 class FastCsvExConverter with Converter<String, List<List<String>>> {
-  /// The corresponding parser instance.
-  final csv_ex_parser.CsvExParser parser;
+  final csv_ex_parser.CsvExParser _parser;
 
   FastCsvExConverter({
     csv_ex_parser.CsvExParser? parser,
-  }) : parser = parser ?? csv_ex_parser.CsvExParser();
+  }) : _parser = parser ?? csv_ex_parser.CsvExParser();
 
   @override
   List<List<String>> convert(String input) {
-    final result = csv_ex_parser.parseString(parser.parseStart, input);
+    final result = csv_ex_parser.parseString(_parser.parseStart, input);
     return result;
   }
 
   @override
   Sink<String> startChunkedConversion(Sink<List<List<String>>> sink) {
-    final input = csv_ex_parser.parseAsync(parser.parseStart$Async, (result) {
+    final input = csv_ex_parser.parseAsync(_parser.parseStart$Async, (result) {
       final result2 = result.getResult();
       sink.add(result2);
     });
