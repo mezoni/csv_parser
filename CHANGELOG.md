@@ -1,3 +1,7 @@
+## 0.2.2
+
+- Changes to example file `example/example.dart`.
+
 ## 0.2.1
 
 - Added experimental support for event-based streaming parsing.

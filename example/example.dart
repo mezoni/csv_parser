@@ -21,7 +21,8 @@ Stream<String> _createStream() {
   const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
   const rowsInChunk = count ~/ 100;
   final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
-  print('The data will arrive in ${chunk.length} code units chunks.');
+  print('Total data amount ${chunk.length * rowsInChunk} code units.');
+  print('The data will arrive in ${chunk.length} code unit chunks.');
   var i = 0;
   Timer.periodic(Duration.zero, (timer) {
     sink.add(chunk);
@@ -48,10 +49,10 @@ Future<void> _exampleParseStream() async {
   final completer = Completer<void>();
   final sw = Stopwatch();
   sw.start();
-  print('Start saving to database');
+  print('Start saving to virtual database');
   final input = parseAsync(parser.parseStart$Async, (result) {
     sw.stop();
-    print('Saving to database complete in ${sw.elapsed}');
+    print('Saving to virtual database complete in ${sw.elapsed}');
     try {
       final input = result.input;
       print('Max buffer load: ${input.bufferLoad} code units');
@@ -130,13 +131,13 @@ class _MyParser extends CsvParser {
     _totalCount += rows.length;
     if (_count > 100000 || isLast) {
       print(
-          'Saved to database $_totalCount row(s) in $_transactionCount transaction(s)');
+          'Saved to virtual database $_totalCount row(s) in $_transactionCount transaction(s)');
       _count = 0;
     }
 
     if (isLast) {
       print(
-          'Totally saved to database $_totalCount row(s) in $_transactionCount transaction(s)');
+          'Totally saved to virtual database $_totalCount row(s) in $_transactionCount transaction(s)');
     }
   }
 }

@@ -28,32 +28,49 @@ const _csv = '''
 1999,Chevy,"Venture В«Extended EditionВ»","",4900.00
 1996,Jeep,Grand Cherokee,"MUST SELL! air, moon roof, loaded",4799.00''';
 
-Stream<String> _createStream(int count) {
-  Iterable<String> generator() sync* {
-    for (var i = 0; i < count; i++) {
-      const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
-      yield row;
-      if (i <= count - 1) {
-        yield '\n';
-      }
+Stream<String> _createStream() {
+  // Create the stream with 1000000 rows
+  const count = 1000 * 1000;
+  final controller = StreamController<String>();
+  final sink = controller.sink;
+  const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
+  const rowsInChunk = count ~/ 100;
+  final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
+  print('Total data amount ${chunk.length * rowsInChunk} code units.');
+  print('The data will arrive in ${chunk.length} code units chunks.');
+  var i = 0;
+  Timer.periodic(Duration.zero, (timer) {
+    sink.add(chunk);
+    i += rowsInChunk;
+    if (i <= count) {
+      sink.add('\n');
     }
-  }
 
-  return Stream.fromIterable(generator());
+    if (i >= count) {
+      controller.close();
+      timer.cancel();
+    }
+  });
+
+  return controller.stream;
 }
 
 Future<void> _exampleParseStream() async {
-  // Create the stream with 1 000 000 rows
-  final stream = _createStream(1000 * 1000);
+  print('=========================');
+  print('Start streaming parsing');
+  // Get external data
+  final stream = _createStream();
   final parser = _MyParser();
   final completer = Completer<void>();
   final sw = Stopwatch();
   sw.start();
-  print('Start saving to database');
+  print('Start saving to virtual database');
   final input = parseAsync(parser.parseStart$Async, (result) {
     sw.stop();
-    print('Saving to database complete in ${sw.elapsed}');
+    print('Saving to virtual database complete in ${sw.elapsed}');
     try {
+      final input = result.input;
+      print('Max buffer load: ${input.bufferLoad} code units');
       result.getResult();
       completer.complete();
     } catch (e, s) {
@@ -95,23 +112,13 @@ class _MyParser extends CsvParser {
 
   @override
   R? endEvent<R>(CsvParserEvent event, R? result, bool ok) {
-    void saveRows() {
-      if (_rows.isNotEmpty) {
-        _transactionCount++;
-        _count += _rows.length;
-        _totalCount += _rows.length;
-        if (_count > 100000) {
-          print(
-              'Saved to database $_totalCount row(s) in $_transactionCount transaction(s)');
-          _count = 0;
-        }
-
-        final rows = _rows.toList();
-        _rows.clear();
-        Timer.run(() async {
-          await _saveToDatabase(rows);
-        });
-      }
+    void saveRows(bool isLast) {
+      final rows = _rows.toList();
+      _rows.clear();
+      Timer.run(() async {
+        // Asynchronous saving to the database.
+        await _saveToDatabase(rows, isLast);
+      });
     }
 
     if (ok) {
@@ -120,18 +127,12 @@ class _MyParser extends CsvParser {
           final row = result as List<String>;
           _rows.add(row);
           if (_rows.length > 5000) {
-            saveRows();
+            saveRows(false);
           }
 
           break;
         case CsvParserEvent.startEvent:
-          if (_rows.isNotEmpty) {
-            saveRows();
-          }
-
-          print(
-              'Totally saved to database $_totalCount row(s) in $_transactionCount transaction(s)');
-          break;
+          saveRows(true);
         default:
       }
     }
@@ -139,8 +140,20 @@ class _MyParser extends CsvParser {
     return result;
   }
 
-  Future<void> _saveToDatabase(List<List<String>> rows) async {
-    //Save to database
+  Future<void> _saveToDatabase(List<List<String>> rows, bool isLast) async {
+    _transactionCount++;
+    _count += rows.length;
+    _totalCount += rows.length;
+    if (_count > 100000 || isLast) {
+      print(
+          'Saved to virtual database $_totalCount row(s) in $_transactionCount transaction(s)');
+      _count = 0;
+    }
+
+    if (isLast) {
+      print(
+          'Totally saved to virtual database $_totalCount row(s) in $_transactionCount transaction(s)');
+    }
   }
 }
 
@@ -149,24 +162,31 @@ class _MyParser extends CsvParser {
 Output:
 
 ```
+Connecting to VM Service at ws://127.0.0.1:33457/Tg3FWVv8yZI=/ws
 [1997, Ford, E350, ac, "abs", moon, 3000.00]
 [1999, Chevy, Venture В«Extended EditionВ», , 4900.00]
 [1996, Jeep, Grand Cherokee, MUST SELL! air, moon roof, loaded, 4799.00]
 Ford 3000.0
 Chevy 4900.0
 Jeep 4799.0
-Start saving to database
-Saved to database 100020 row(s) in 20 transaction(s)
-Saved to database 200040 row(s) in 40 transaction(s)
-Saved to database 300060 row(s) in 60 transaction(s)
-Saved to database 400080 row(s) in 80 transaction(s)
-Saved to database 500100 row(s) in 100 transaction(s)
-Saved to database 600120 row(s) in 120 transaction(s)
-Saved to database 700140 row(s) in 140 transaction(s)
-Saved to database 800160 row(s) in 160 transaction(s)
-Saved to database 900180 row(s) in 180 transaction(s)
-Totally saved to database 1000000 row(s) in 200 transaction(s)
-Saving to database complete in 0:00:05.809904
+=========================
+Start streaming parsing
+Total data amount 5299990000 code units.
+The data will arrive in 529999 code unit chunks.
+Start saving to virtual database
+Saved to virtual database 100020 row(s) in 20 transaction(s)
+Saved to virtual database 200040 row(s) in 40 transaction(s)
+Saved to virtual database 300060 row(s) in 60 transaction(s)
+Saved to virtual database 400080 row(s) in 80 transaction(s)
+Saved to virtual database 500100 row(s) in 100 transaction(s)
+Saved to virtual database 600120 row(s) in 120 transaction(s)
+Saved to virtual database 700140 row(s) in 140 transaction(s)
+Saved to virtual database 800160 row(s) in 160 transaction(s)
+Saved to virtual database 900180 row(s) in 180 transaction(s)
+Saving to virtual database complete in 0:00:04.634083
+Max buffer load: 530053 code units
+Saved to virtual database 1000000 row(s) in 200 transaction(s)
+Totally saved to virtual database 1000000 row(s) in 200 transaction(s)
 ```
 
 ## About the implementation of parsers
