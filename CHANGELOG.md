@@ -1,3 +1,7 @@
+## 0.2.5
+
+- Breaking change. The converters have been renamed and separated into different files. This is done because in future versions they will be generated automatically by the parser tool.
+
 ## 0.2.4
 
 - Changes to example file `example/example.dart`.

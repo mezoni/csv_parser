@@ -1,9 +1,9 @@
-import 'package:fast_csv/csv_converter.dart';
+import 'package:fast_csv/csv_ex_converter.dart';
 import 'package:fast_csv/csv_ex_parser.dart';
 
 void main(List<String> args) {
   final parser = CsvExParser(separator: ';');
-  final result = FastCsvExConverter(parser: parser).convert(_data);
+  final result = CsvExConverter(parser: parser).convert(_data);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];

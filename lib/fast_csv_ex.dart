@@ -1,6 +1,6 @@
 import 'package:fast_csv/csv_ex_parser.dart';
 
-import 'csv_converter.dart';
+import 'csv_ex_converter.dart';
 
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
@@ -11,6 +11,6 @@ import 'csv_converter.dart';
 /// - Exception `FormatException` will be thrown if parsing fails
 List<List<String>> parse(String source, {String separator = ','}) {
   final parser = CsvExParser(separator: separator);
-  final result = FastCsvExConverter(parser: parser).convert(source);
+  final result = CsvExConverter(parser: parser).convert(source);
   return result;
 }

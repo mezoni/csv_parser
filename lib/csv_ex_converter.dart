@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'csv_parser.dart';
+import 'csv_ex_parser.dart';
 
-/// The [CsvConverter] converts CSV data to [List<List<String>>] value.
+/// The [CsvExConverter] converts CSV data to [List<List<String>>] value.
 ///
-/// If event-based parsing is required, then the corresponding parser instance
-/// (with event handlers) must be passed as a constructor argument.
-class CsvConverter with Converter<String, List<List<String>>> {
-  final CsvParser _parser;
+/// If event-based parsing is required, the corresponding parser instances must
+/// have appropriate handlers.
+class CsvExConverter with Converter<String, List<List<String>>> {
+  final CsvExParser _parser;
 
-  CsvConverter({
-    CsvParser? parser,
-  }) : _parser = parser ?? const CsvParser();
+  CsvExConverter({
+    CsvExParser? parser,
+  }) : _parser = parser ?? CsvExParser();
 
   @override
   List<List<String>> convert(String input) {

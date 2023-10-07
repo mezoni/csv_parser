@@ -52,13 +52,13 @@ Future<void> _exampleParseStreamWithEvents() async {
     sw.stop();
   });
 
-  await stream.transform(FastCsvConverter(parser: parser)).first;
+  await stream.transform(CsvConverter(parser: parser)).first;
 }
 
 void _exampleParseString() {
   print('=========================');
   print('Parsing string');
-  final result = FastCsvConverter().convert(_data);
+  final result = CsvConverter().convert(_data);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];
