@@ -1,4 +1,4 @@
-import 'package:fast_csv/csv_parser.dart';
+import 'csv_converter.dart';
 
 /// Parses the CSV data and returns the result as a `List<List<String>>`.
 /// - Will not parse numbers
@@ -8,7 +8,6 @@ import 'package:fast_csv/csv_parser.dart';
 /// - Escaping a character `"` in a string is parsed via sequence `""`
 /// - Exception `FormatException` will be thrown if parsing fails
 List<List<String>> parse(String source) {
-  const parser = CsvParser();
-  final result = parseString(parser.parseStart, source);
+  final result = CsvConverter().convert(source);
   return result;
 }

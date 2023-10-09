@@ -1,5 +1,3 @@
-import 'package:fast_csv/csv_ex_parser.dart';
-
 import 'csv_ex_converter.dart';
 
 /// Parses the CSV data and returns the result as a `List<List<String>>`.

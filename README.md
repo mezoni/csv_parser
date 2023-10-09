@@ -2,7 +2,7 @@
 
 Classic CSV parsers suitable for most use cases. Pretty fast parsing. With experimental event-based streaming parsing.
 
-Version: 0.2.6
+Version: 0.2.7
 
 [![Pub Package](https://img.shields.io/pub/v/fast_csv.svg)](https://pub.dev/packages/fast_csv)
 [![GitHub Issues](https://img.shields.io/github/issues/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/issues)
@@ -203,6 +203,7 @@ const CsvParser();
 
 %%
 
+@event
 Start = v:Rows Eof ;
 
 @inline
@@ -214,7 +215,6 @@ CloseQuote = '"' Spaces ;
 @inline
 Eof = !. ;
 
-@inline
 Eol = '\n' / '\r\n' / '\r' ;
 
 @event

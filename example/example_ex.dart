@@ -1,5 +1,4 @@
 import 'package:fast_csv/csv_ex_converter.dart';
-import 'package:fast_csv/csv_ex_parser.dart';
 
 void main(List<String> args) {
   final parser = CsvExParser(separator: ';');
