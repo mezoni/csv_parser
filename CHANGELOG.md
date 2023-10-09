@@ -1,3 +1,7 @@
+## 0.2.7
+
+- The parsers has been rebuilt using the new version of the `peg` parser generation tool.
+
 ## 0.2.6
 
 - The parsers has been rebuilt using the new version of the `peg` parser generation tool. Converters are now generated automatically and, in addition, the performance of parsers has increased.

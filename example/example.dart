@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:fast_csv/csv_converter.dart';
-import 'package:fast_csv/csv_parser.dart';
 
 Future<void> main(List<String> args) async {
   _exampleParseString();
@@ -21,8 +20,8 @@ Stream<String> _createStream() {
   const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
   const rowsInChunk = count ~/ 100;
   final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
-  print('Total data amount ${row.length * count} code units.');
-  print('The data will arrive in ${chunk.length} code unit chunks.');
+  print('Total data amount ${row.length * count} UTF-16 code units.');
+  print('The data will arrive in ${chunk.length} UTF-16 code unit chunks.');
   var i = 0;
   Timer.periodic(Duration.zero, (timer) {
     sink.add(chunk);

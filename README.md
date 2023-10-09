@@ -18,14 +18,13 @@ An example of a simple way to parse 1000K rows (53M UTF-16 code units) in chunks
 import 'dart:async';
 
 import 'package:fast_csv/csv_converter.dart';
-import 'package:fast_csv/csv_parser.dart';
 
 Future<void> main(List<String> args) async {
   _exampleParseString();
   await _exampleParseStreamWithEvents();
 }
 
-const _csv = '''
+const _data = '''
 1997,Ford,E350,"ac, ""abs"", moon",3000.00
 1999,Chevy,"Venture В«Extended EditionВ»","",4900.00
 1996,Jeep,Grand Cherokee,"MUST SELL! air, moon roof, loaded",4799.00''';
@@ -38,8 +37,8 @@ Stream<String> _createStream() {
   const row = '1999,Chevy,"Venture В«Extended EditionВ»","",4900.00';
   const rowsInChunk = count ~/ 100;
   final chunk = List.generate(rowsInChunk, (i) => row).join('\n');
-  print('Total data amount ${row.length * count} code units.');
-  print('The data will arrive in ${chunk.length} code unit chunks.');
+  print('Total data amount ${row.length * count} UTF-16 code units.');
+  print('The data will arrive in ${chunk.length} UTF-16 code unit chunks.');
   var i = 0;
   Timer.periodic(Duration.zero, (timer) {
     sink.add(chunk);
@@ -69,13 +68,13 @@ Future<void> _exampleParseStreamWithEvents() async {
     sw.stop();
   });
 
-  await stream.transform(FastCsvConverter(parser: parser)).first;
+  await stream.transform(CsvConverter(parser: parser)).first;
 }
 
 void _exampleParseString() {
   print('=========================');
   print('Parsing string');
-  final result = FastCsvConverter().convert(_csv);
+  final result = CsvConverter().convert(_data);
   print(result.join('\n'));
   for (final row in result) {
     final car = row[1];
@@ -175,8 +174,8 @@ Chevy 4900.0
 Jeep 4799.0
 =========================
 Start streaming parsing with events
-Total data amount 52000000 code units.
-The data will arrive in 529999 code unit chunks.
+Total data amount 52000000 UTF-16 code units.
+The data will arrive in 529999 UTF-16 code unit chunks.
 Saved to virtual database 100010 row(s) in 10 transaction(s)
 Saved to virtual database 200020 row(s) in 20 transaction(s)
 Saved to virtual database 300030 row(s) in 30 transaction(s)
@@ -188,7 +187,7 @@ Saved to virtual database 800080 row(s) in 80 transaction(s)
 Saved to virtual database 900090 row(s) in 90 transaction(s)
 Saved to virtual database 1000000 row(s) in 100 transaction(s)
 Totally saved to virtual database 1000000 row(s) in 100 transaction(s)
-Saving to virtual database complete in 0:00:04.364904
+Saving to virtual database complete in 0:00:03.335892
 ```
 
 ## About the implementation of parsers
