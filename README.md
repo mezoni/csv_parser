@@ -2,7 +2,7 @@
 
 Classic CSV parsers suitable for most use cases. Pretty fast parsing. With experimental event-based streaming parsing.
 
-Version: 0.2.7
+Version: 0.2.8
 
 [![Pub Package](https://img.shields.io/pub/v/fast_csv.svg)](https://pub.dev/packages/fast_csv)
 [![GitHub Issues](https://img.shields.io/github/issues/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/issues)
@@ -204,16 +204,13 @@ const CsvParser();
 %%
 
 @event
-Start = v:Rows Eof ;
+Start = v:Rows Eol? @eof() ;
 
 @inline
 Chars = ($[^"]+ / '""' <String>{ $$ = '"'; })* ;
 
 @inline
 CloseQuote = '"' Spaces ;
-
-@inline
-Eof = !. ;
 
 Eol = '\n' / '\r\n' / '\r' ;
 
@@ -224,18 +221,15 @@ Field = String / Text ;
 @inline
 OpenQuote = Spaces '"' ;
 
-@inline
-RowEnding = Eol !Eof ;
-
 @event
-Row = @sepBy(Field, ',') ;
+Row = @sepBy1(Field, ',' ↑) ;
 
-Rows = v:@sepBy(Row, RowEnding) Eol? ;
+Rows = v:@sepBy1(Row, Eol ↑) ;
 
 Spaces = [ \t]* ;
 
 String
-String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
+String = OpenQuote ↑ v:Chars CloseQuote { $$ = v.join(); } ;
 
 Text = $[^,"\n\r]* ;
 

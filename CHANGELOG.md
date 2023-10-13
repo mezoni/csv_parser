@@ -1,3 +1,7 @@
+## 0.2.8
+
+- The parsers has been rebuilt using the new version of the `peg` parser generation tool.
+
 ## 0.2.7
 
 - The parsers has been rebuilt using the new version of the `peg` parser generation tool.
