@@ -1,3 +1,9 @@
+## 0.2.9
+
+- Changes to grammar file `csv_parser.peg`.
+- Changes to grammar file `csv_ex_parser.peg`.
+- The parsers has been rebuilt using the new version of the `peg` parser generation tool.
+
 ## 0.2.8
 
 - The parsers has been rebuilt using the new version of the `peg` parser generation tool.

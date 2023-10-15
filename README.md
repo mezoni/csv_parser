@@ -10,6 +10,16 @@ Version: 0.2.8
 [![GitHub Stars](https://img.shields.io/github/stars/mezoni/csv_parser.svg)](https://github.com/mezoni/csv_parser/stargazers)
 [![GitHub License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://raw.githubusercontent.com/mezoni/csv_parser/main/LICENSE)
 
+## About testing generated parsers
+
+Both parsers have been tested in both operating modes, synchronous and asynchronous modes.  
+For testing, files from the following source are used:  
+`CSV is a data directory which contains examples of CSV files, a flat file format describing values in a table.`  
+https://people.sc.fsu.edu/~jburkardt/data/csv/csv.html
+
+All files are parsed except for the malformed file `mlb_players.csv`.  
+It has unclosed quote on row 1036.  
+
 ## Example of the parser usage
 
 An example of a simple way to parse 1000K rows (53M UTF-16 code units) in chunks (by ~0.53M UTF-16 code units) using events without consuming a lot of memory (during parsing) and simultaneously saving this parsed data into a virtual database (by 10K rows per transaction).
@@ -222,9 +232,9 @@ Field = String / Text ;
 OpenQuote = Spaces '"' ;
 
 @event
-Row = @sepBy1(Field, ',' ↑) ;
+Row = @list1(Field, ',' ↑ v:Field) ;
 
-Rows = v:@sepBy1(Row, Eol ↑) ;
+Rows = v:@list1(Row, Eol ↑ v:Row) ;
 
 Spaces = [ \t]* ;
 

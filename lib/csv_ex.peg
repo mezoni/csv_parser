@@ -35,12 +35,15 @@ Field = String / Text ;
 OpenQuote = Spaces '"' ;
 
 @event
-Row = @sepBy1(Field, Sep ↑) ;
-
-Rows = v:@sepBy1(Row, Eol ↑) ;
+Row = @list1(Field, Separator ↑ v:Field) ;
 
 @inline
-Sep = @matchString({ _separator }) ;
+RowEnding = Eol !@eof() ;
+
+Rows = v:@list1(Row, RowEnding ↑ v:Row) ;
+
+@inline
+Separator = @matchString({ _separator }) ;
 
 Spaces = [ \t]* ;
 
@@ -50,4 +53,4 @@ String = OpenQuote ↑ v:Chars CloseQuote { $$ = v.join(); } ;
 Text = $TextChar* ;
 
 @inline
-TextChar = @verify([^"\n\r], { if ($$ == _separatorChar) { error = ErrorUnexpectedCharacter(); } }) ;
+TextChar = @verify([^"\n\r], { if ($$ == _separatorChar) { error = const ErrorUnexpectedCharacter(); } }) ;
