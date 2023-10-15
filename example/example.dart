@@ -118,6 +118,8 @@ class _MyParser extends CsvParser {
             Timer.run(onComplete!);
           }
 
+          // Completely freeing memory from the entire list
+          result = const <List<String>>[] as R;
         default:
       }
     }

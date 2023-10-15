@@ -1,3 +1,7 @@
+## 0.2.10
+
+- Changes to example file `example/example_ex.dart`.
+
 ## 0.2.9
 
 - Changes to grammar file `csv_parser.peg`.
