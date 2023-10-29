@@ -53,4 +53,4 @@ String = OpenQuote ↑ v:Chars CloseQuote { $$ = v.join(); } ;
 Text = $TextChar* ;
 
 @inline
-TextChar = @verify([^"\n\r], { if ($$ == _separatorChar) { error = const ErrorUnexpectedCharacter(); } }) ;
+TextChar = @verify('Unexpected character', [^"\n\r], { $$ != _separatorChar }) ;

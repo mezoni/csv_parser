@@ -1,3 +1,7 @@
+## 0.2.11
+
+- The parsers has been rebuilt using the new version of the `peg` parser generation tool.
+
 ## 0.2.10
 
 - Changes to example file `example/example_ex.dart`.
