@@ -35,9 +35,13 @@ Future<void> main(List<String> args) async {
 }
 
 const _data = '''
-1997,Ford,E350,"ac, ""abs"", moon",3000.00
-1999,Chevy,"Venture В«Extended EditionВ»","",4900.00
-1996,Jeep,Grand Cherokee,"MUST SELL! air, moon roof, loaded",4799.00''';
+Year,Make,Model,Description,Price
+1997,Ford,E350,"ac, abs, moon",3000.00
+1999,Chevy,"Venture ""Extended Edition""","",4900.00
+1999,Chevy,"Venture ""Extended Edition, Very Large""","",5000.00
+1996,Jeep,Grand Cherokee,"MUST SELL!
+air, moon roof, loaded",4799.00
+''';
 
 Stream<String> _createStream() {
   // Create the stream with 1000000 rows
@@ -86,7 +90,8 @@ void _exampleParseString() {
   print('Parsing string');
   final result = CsvConverter().convert(_data);
   print(result.join('\n'));
-  for (final row in result) {
+  for (var i = 1; i < result.length; i++) {
+    final row = result[i];
     final car = row[1];
     final price = num.parse(row[4]);
     print('$car $price');
@@ -145,6 +150,8 @@ class _MyParser extends CsvParser {
             Timer.run(onComplete!);
           }
 
+          // Completely freeing memory from the entire list
+          result = const <List<String>>[] as R;
         default:
       }
     }
@@ -176,11 +183,15 @@ Output:
 ```
 =========================
 Parsing string
-[1997, Ford, E350, ac, "abs", moon, 3000.00]
-[1999, Chevy, Venture В«Extended EditionВ», , 4900.00]
-[1996, Jeep, Grand Cherokee, MUST SELL! air, moon roof, loaded, 4799.00]
+[Year, Make, Model, Description, Price]
+[1997, Ford, E350, ac, abs, moon, 3000.00]
+[1999, Chevy, Venture "Extended Edition", , 4900.00]
+[1999, Chevy, Venture "Extended Edition, Very Large", , 5000.00]
+[1996, Jeep, Grand Cherokee, MUST SELL!
+air, moon roof, loaded, 4799.00]
 Ford 3000.0
 Chevy 4900.0
+Chevy 5000.0
 Jeep 4799.0
 =========================
 Start streaming parsing with events
@@ -197,7 +208,40 @@ Saved to virtual database 800080 row(s) in 80 transaction(s)
 Saved to virtual database 900090 row(s) in 90 transaction(s)
 Saved to virtual database 1000000 row(s) in 100 transaction(s)
 Totally saved to virtual database 1000000 row(s) in 100 transaction(s)
-Saving to virtual database complete in 0:00:03.335892
+Saving to virtual database complete in 0:00:04.087358
+```
+
+## An example of using a configurable parser
+
+This parser is slightly slower than the non-configurable parser.  
+
+The difference between using a normal parser and using a configurable parser is that you can specify a field separator.  
+Any value (such as a space or semicolon).
+
+```dart
+import 'package:fast_csv/csv_ex_converter.dart';
+
+void main(List<String> args) {
+  final parser = CsvExParser(separator: ';');
+  final result = CsvExConverter(parser: parser).convert(_data);
+  print(result.join('\n'));
+  for (var i = 1; i < result.length; i++) {
+    final row = result[i];
+    final car = row[1];
+    final price = num.parse(row[4]);
+    print('$car $price');
+  }
+}
+
+const _data = '''
+Year;Make;Model;Description;Price
+1997;Ford;E350;"ac, abs, moon";3000.00
+1999;Chevy;"Venture ""Extended Edition""";"";4900.00
+1999;Chevy;"Venture ""Extended Edition, Very Large""";"";5000.00
+1996;Jeep;Grand Cherokee;"MUST SELL!
+air, moon roof, loaded";4799.00
+''';
+
 ```
 
 ## About the implementation of parsers
@@ -234,90 +278,15 @@ OpenQuote = Spaces '"' ;
 @event
 Row = @list1(Field, ',' ↑ v:Field) ;
 
-Rows = v:@list1(Row, Eol ↑ v:Row) ;
+@inline
+RowEnding = Eol !@eof() ;
+
+Rows = v:@list1(Row, RowEnding ↑ v:Row) ;
 
 Spaces = [ \t]* ;
 
 String
 String = OpenQuote ↑ v:Chars CloseQuote { $$ = v.join(); } ;
-
-Text = $[^,"\n\r]* ;
-
-```
-
-## An example of using a configurable parser
-
-This parser is slightly slower than the non-configurable parser.  
-
-The difference between using a normal parser and using a configurable parser is that you can specify a field separator.  
-Any value (such as a space or semicolon).
-
-```dart
-import 'package:fast_csv/fast_csv_ex.dart' as fast_csv_ex;
-
-void main(List<String> args) {
-  final result = fast_csv_ex.parse(_csv, separator: ';');
-  print(result.join('\n'));
-  for (final row in result) {
-    final car = row[1];
-    final price = num.parse(row[4]);
-    print('$car $price');
-  }
-}
-
-const _csv = '''
-1997;Ford;E350;"ac, ""abs"", moon";3000.00
-1999;Chevy;"Venture В«Extended EditionВ»";"";4900.00
-1996;Jeep;Grand Cherokee;"MUST SELL! air, moon roof, loaded";4799.00
-''';
-```
-
-## About the implementation of parsers
-
-Parsers are generated from PEG grammars.  
-Software used to generate parsers [![Pub Package](https://img.shields.io/pub/v/peg.svg)](https://pub.dev/packages/peg)  
-Below is the source code for one of the grammars.
-
-```
-%%
-
-const CsvParser();
-
-%%
-
-@event
-Start = v:Rows Eof ;
-
-@inline
-Chars = ($[^"]+ / '""' <String>{ $$ = '"'; })* ;
-
-@inline
-CloseQuote = '"' Spaces ;
-
-@inline
-Eof = !. ;
-
-Eol = '\n' / '\r\n' / '\r' ;
-
-@event
-@inline
-Field = String / Text ;
-
-@inline
-OpenQuote = Spaces '"' ;
-
-@inline
-RowEnding = Eol !Eof ;
-
-@event
-Row = @sepBy(Field, ',') ;
-
-Rows = v:@sepBy(Row, RowEnding) Eol? ;
-
-Spaces = [ \t]* ;
-
-String
-String = OpenQuote v:Chars CloseQuote { $$ = v.join(); } ;
 
 Text = $[^,"\n\r]* ;
 

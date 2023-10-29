@@ -4,7 +4,8 @@ void main(List<String> args) {
   final parser = CsvExParser(separator: ';');
   final result = CsvExConverter(parser: parser).convert(_data);
   print(result.join('\n'));
-  for (final row in result) {
+  for (var i = 1; i < result.length; i++) {
+    final row = result[i];
     final car = row[1];
     final price = num.parse(row[4]);
     print('$car $price');
@@ -12,7 +13,10 @@ void main(List<String> args) {
 }
 
 const _data = '''
-1997;Ford;E350;"ac, ""abs"", moon";3000.00
-1999;Chevy;"Venture В«Extended EditionВ»";"";4900.00
-1996;Jeep;Grand Cherokee;"MUST SELL! air, moon roof, loaded";4799.00
+Year;Make;Model;Description;Price
+1997;Ford;E350;"ac, abs, moon";3000.00
+1999;Chevy;"Venture ""Extended Edition""";"";4900.00
+1999;Chevy;"Venture ""Extended Edition, Very Large""";"";5000.00
+1996;Jeep;Grand Cherokee;"MUST SELL!
+air, moon roof, loaded";4799.00
 ''';
