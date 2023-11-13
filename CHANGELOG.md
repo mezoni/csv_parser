@@ -3,6 +3,7 @@
 - Changes in example file `example/example.dart`.
 - Changes in example file `example/example_ex.dart`.
 - Changes in the file `README.md`.
+- The parsers has been rebuilt using the new version of the `peg` parser generation tool.
 
 ## 0.2.10
 
